@@ -14,7 +14,6 @@ import { SmartDispatchView } from './components/SmartDispatchView';
 import { MapSection } from './components/map-section/MapSection';
 import { DemoWalkthroughModal } from './components/DemoWalkthroughModal';
 import { WhatIfSimulatorModal } from './components/WhatIfSimulatorModal';
-import { ProductAiAssistant } from './components/ProductAiAssistant';
 import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from './context/TranslationContext';
 
@@ -42,8 +41,7 @@ import {
   SyncEvent,
   InTransitShipment,
   RejectionReason,
-  ThemeMode,
-  ChatContext
+  ThemeMode
 } from './types';
 
 import { runOptimizationEngine } from './services/optimizationEngine';
@@ -53,7 +51,6 @@ import {
   processEventQueue
 } from './services/offlineSyncService';
 import { FlowGridAPI, BackendHealthStatus, setActiveUserRole } from './services/api';
-import { PLAN_HORIZON_DAYS, SYNTHETIC_SALES_PANEL } from './data/demoScope';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('plans');
@@ -61,14 +58,8 @@ export const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [backendStatus, setBackendStatus] = useState<BackendHealthStatus | null>(null);
   const [theme, setTheme] = useState<ThemeMode>('day');
-  const [assistantContext, setAssistantContext] = useState<ChatContext | null>(null);
 
   const handleToggleTheme = () => setTheme(prev => prev === 'night' ? 'day' : 'night');
-
-  const handleOpenAssistantWithContext = (ctx: ChatContext) => {
-    setAssistantContext(ctx);
-    setActiveTab('assistant');
-  };
 
   // Sync active user persona with API client
   useEffect(() => {
@@ -552,7 +543,6 @@ export const App: React.FC = () => {
                activeTab === 'warehouse' ? t('nav.warehouse', 'Warehouse Picking & Operations') :
                activeTab === 'retailer' ? t('nav.retailer', 'Kirana Field POS & Capture') :
                activeTab === 'import' ? t('nav.import', 'Master Data Import Studio') :
-               activeTab === 'assistant' ? 'HETVAYA Product AI Assistant' :
                t('nav.health', 'System Health & Monitoring')}
             </span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
@@ -611,7 +601,6 @@ export const App: React.FC = () => {
               retailers={retailers}
               batches={batches}
               isGenerating={isGenerating}
-              onAskAi={handleOpenAssistantWithContext}
             />
           )}
 
@@ -669,14 +658,6 @@ export const App: React.FC = () => {
 
           {activeTab === 'health' && (
             <AdminHealthView />
-          )}
-
-          {activeTab === 'assistant' && (
-            <ProductAiAssistant
-              context={assistantContext}
-              onClearContext={() => setAssistantContext(null)}
-              onNavigateTab={(tab) => setActiveTab(tab as ActiveTab)}
-            />
           )}
         </main>
 

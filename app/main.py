@@ -76,19 +76,9 @@ app.add_middleware(
 
 # Include API Routers
 from app.api.v1.router import api_router
-from app.db.session import get_db
-from sqlalchemy.orm import Session
-from app.schemas.ai import ChatQueryRequest, ChatQueryResponse
-from app.services.chat_intelligence_service import ProductChatIntelligenceService
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(api_router, include_in_schema=False)  # Direct route aliases without /api/v1 prefix
-
-
-@app.post("/api/chat", response_model=ChatQueryResponse, tags=["HETVAYA Product AI Assistant"])
-def chat_direct_alias(payload: ChatQueryRequest, db: Session = Depends(get_db)) -> ChatQueryResponse:
-    """Direct alias endpoint for HETVAYA Product AI Assistant."""
-    return ProductChatIntelligenceService.process_chat_query(payload=payload, db=db)
 
 
 @app.get("/")

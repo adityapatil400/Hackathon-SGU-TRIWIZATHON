@@ -19,14 +19,13 @@ import {
   Truck,
   Sun,
   Moon,
-  Languages,
-  Bot
+  Languages
 } from 'lucide-react';
 import { UserRole, ThemeMode } from '../types';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../context/TranslationContext';
 
 
-export type ActiveTab = 'plans' | 'forecast' | 'map' | 'benchmark' | 'warehouse' | 'retailer' | 'dispatch' | 'import' | 'health' | 'assistant';
+export type ActiveTab = 'plans' | 'forecast' | 'map' | 'benchmark' | 'warehouse' | 'retailer' | 'dispatch' | 'import' | 'health';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -346,27 +345,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Sliders className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>{t('header.whatIf', 'What-If Simulator')}</span>
-        </button>
-
-        {/* Product AI Assistant Navigation Button (directly below What-If Simulator) */}
-        <button
-          onClick={() => handleTabClick('assistant')}
-          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-            activeTab === 'assistant'
-              ? 'bg-[#2563EB] text-white shadow-md shadow-[#2563EB]/25'
-              : 'text-[#1E293B] bg-white hover:bg-[#EFF6FF] border border-[#2563EB]/40 hover:border-[#2563EB]'
-          }`}
-          title="Open HETVAYA Product AI Assistant"
-        >
-          <div className="flex items-center gap-2">
-            <Bot className={`w-4 h-4 ${activeTab === 'assistant' ? 'text-white' : 'text-[#2563EB]'}`} />
-            <span>Product AI Assistant</span>
-          </div>
-          <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-            activeTab === 'assistant' ? 'bg-white/20 text-white' : 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-          }`}>
-            AI
-          </span>
         </button>
 
         <p className="text-[10px] text-center text-[#64748B] pt-1">

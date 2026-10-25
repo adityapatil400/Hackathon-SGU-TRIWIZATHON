@@ -5,7 +5,6 @@ from app.services.plan_lifecycle_service import PlanLifecycleService
 from app.services.validation_service import ValidationService
 from app.services.decision_service_client import DecisionServiceClient
 from app.services.migration_service import DataMigrationService
-from app.services.chat_intelligence_service import ProductChatIntelligenceService
 
 __all__ = [
     "InventoryService",
@@ -13,6 +12,5 @@ __all__ = [
     "ValidationService",
     "DecisionServiceClient",
     "DataMigrationService",
-    "ProductChatIntelligenceService",
 ]
 

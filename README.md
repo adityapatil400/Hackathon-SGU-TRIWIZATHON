@@ -1,14 +1,14 @@
-# HETVAYA: AI-Powered Distribution Intelligence, Inventory Optimization & Product Assistant
+# HETVAYA: AI-Powered Distribution Intelligence & Inventory Optimization Engine
 
 **SGU-TRIWIZATHON — Problem Statement 2: Distribution Intelligence & Inventory Optimization**
 
-**HETVAYA** is an enterprise-grade AI decision-support, dispatch-optimization, and conversational product intelligence platform for FMCG distribution networks. It solves the classic retail challenge where some stores have excess inventory while others face catastrophic stockouts. HETVAYA intelligently decides:
+**HETVAYA** is an enterprise-grade AI decision-support and dispatch-optimization platform for FMCG distribution networks. It solves the classic retail challenge where some stores have excess inventory while others face catastrophic stockouts. HETVAYA intelligently decides:
 - **What products should be sent**
 - **How much quantity should be sent**
 - **Where they should be sent**
 - **Which warehouse should supply them**
 
-The system minimizes lost sales and stockouts, cuts transportation costs, eliminates product expiry wastage, and includes the **HETVAYA Product AI Assistant** for real-time inventory and supply-chain inquiries.
+The system minimizes lost sales and stockouts, cuts transportation costs, and eliminates product expiry wastage.
 
 
 ---
@@ -367,71 +367,6 @@ Developed for the **SGU Triwizathon Hackathon (Problem Statement 2: FMCG Distrib
 
 Distributed under the [MIT License](LICENSE).
 
-
----
-
-# 🤖 HETVAYA Product AI Assistant & Authoritative Backend
-
-The **HETVAYA Product AI Assistant** provides conversational supply-chain intelligence answering product specifications, inventory availability, batch-level FEFO expiry risks, supplying warehouse locations, freight costs, and distribution plan explanations.
-
-## Chatbot Architecture & Verification Guarantee
-
-```mermaid
-graph TD
-    User["User Prompt / Context Chip"] --> AssistantUI["Product AI Assistant UI<br/>(White & Cream Light Palette)"]
-    AssistantUI --> APIRoute["POST /api/chat or /api/v1/ai/chat"]
-    APIRoute --> IntelService["ProductChatIntelligenceService"]
-    IntelService --> AuthData["Authoritative Application Data<br/>• DB Products & FMCG Catalog<br/>• InventoryBatches (FEFO & Expiry Dates)<br/>• Warehouses & Kirana Stores<br/>• Real Corridor Freight Rates (₹/cs)<br/>• Demand Forecasts"]
-    IntelService --> DecisionLogic["Zero Hallucination Grounding<br/>• Distinguishes verified vs missing info<br/>• Never fabricates quantities, dates or prices"]
-    DecisionLogic --> OllamaLLM["Local Ollama LLM Reasoning<br/>(llama3.2 / deterministic fallback)"]
-    OllamaLLM --> Response["Structured ChatQueryResponse<br/>• Answer in en / hi / mr<br/>• Verified Sources Attribution<br/>• Dynamic Follow-Up Suggestions"]
-```
-
-### Key API Endpoints
-- `POST /api/chat` (Direct alias)
-- `POST /api/v1/ai/chat` (V1 Domain Endpoint)
-
-**Example Request:**
-```json
-{
-  "message": "Which products are at risk of expiry?",
-  "conversation_id": "conv-123",
-  "context": {
-    "product_sku": "SKU-AML-01"
-  },
-  "language": "en"
-}
-```
-
-**Example Response:**
-```json
-{
-  "answer": "HETVAYA Expiry Risk Assessment: Found 1 batch at risk of expiry: Amul Taaza Homogenised Toned Milk 1L (SKU: SKU-AML-01) — Batch B-KOL-AML-231 at Kolhapur Distribution Center has only 48% shelf life left (Expiry: 2027-01-20)...",
-  "sources": [
-    {
-      "title": "Expiry Risk: Batch B-KOL-AML-231 (SKU-AML-01)",
-      "source_type": "batch_expiry",
-      "product_sku": "SKU-AML-01",
-      "identifier": "B-KOL-AML-231",
-      "verified_data": {
-        "sku": "SKU-AML-01",
-        "batch_no": "B-KOL-AML-231",
-        "expiry_date": "2027-01-20",
-        "remaining_shelf_life_pct": 48.0
-      }
-    }
-  ],
-  "intent": "expiry_risk",
-  "suggested_followups": [
-    "Explain this distribution recommendation.",
-    "What is the available inventory for Amul Milk?",
-    "Which warehouse can supply this product?"
-  ],
-  "is_ai_generated": false,
-  "response_timestamp": "2026-10-25T07:30:00Z"
-}
-```
-
 ---
 
 # 🚀 Running the Complete HETVAYA Application
@@ -475,15 +410,13 @@ npm run lint
 
 | Subsystem | Primary Path | Tech Stack / Components | Role |
 | :--- | :--- | :--- | :--- |
-| **Frontend UI** | [`src/`](src/) | React 19, TypeScript, Tailwind CSS v4, Recharts | Planner console, Kirana POS, HETVAYA Product AI Assistant, Google Maps Satellite |
-| **Product AI Assistant** | [`src/components/ProductAiAssistant.tsx`](src/components/ProductAiAssistant.tsx) | React, Lucide Icons, TranslationContext | Conversational AI grounded in authoritative inventory records & FEFO |
+| **Frontend UI** | [`src/`](src/) | React 19, TypeScript, Tailwind CSS v4, Recharts | Planner console, Kirana POS, Google Maps Satellite, What-If Simulator |
 | **Decision & ML Engine** | [`models/`](models/) | PyTorch, Scikit-learn, Joblib | Neural demand forecaster, anomaly detector & stock optimizer |
 | **Authoritative Backend** | [`app/`](app/) | FastAPI, SQLAlchemy 2.0, Pydantic | Inventory store, reservation authority & plan commitment lifecycle |
-| **Chat Intelligence** | [`app/services/chat_intelligence_service.py`](app/services/chat_intelligence_service.py) | Python, Ollama LLM, FEFO Rules | Natural language synthesis with zero hallucination guarantee |
 | **Database Migrations** | [`alembic/`](alembic/) | Alembic, PostgreSQL / SQLite | Authoritative schema evolution and constraint enforcement |
 | **AI Explainability & Agents** | [`app/api/v1/endpoints/`](app/api/v1/endpoints/) | Local Ollama LLM (`llama3.2:latest`) | Grounded plan trade-off explanation & incident disruption parsing |
 | **Delivery Fleet** | [`app/models/agent.py`](app/models/agent.py) | Autonomous Agents API | Driver telemetry, GPS heartbeats & proximity-based reassignment |
 | **Dataset & Benchmarks** | [`FlowGrid_Maharashtra_Dataset/`](FlowGrid_Maharashtra_Dataset/) | CSV, GeoJSON, OSRM scripts | Maharashtra FMCG demand, weather, roads & depot simulation data |
-| **Test Suite** | [`tests/`](tests/) | Pytest (110 test cases) | Backend decision guard, RBAC, inventory, and AI chat test suites |
+| **Test Suite** | [`tests/`](tests/) | Pytest (100 test cases) | Backend decision guard, RBAC, inventory, and optimization suites |
 
 
