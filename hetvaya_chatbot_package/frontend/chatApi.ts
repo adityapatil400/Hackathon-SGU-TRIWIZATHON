@@ -89,7 +89,7 @@ function synthesizeClientFallback(
 
   if (raw.includes('expiry') || raw.includes('expire') || raw.includes('shelf life') || raw.includes('fefo')) {
     return {
-      answer: `**HETVAYA FEFO Expiry Risk Assessment:**\n\nFound 1 batch at risk of expiry:\n• **Amul Taaza Homogenised Toned Milk 1L** (SKU: \`SKU-AML-01\`) — Batch \`B-KOL-AML-231\` at **Kolhapur Distribution Center** has **48%** shelf life remaining (Expiry: 2027-01-20). This breaches the Kirana store intake threshold of 70%.\n\n**Recommendation:** Prioritize dispatch to high-velocity Modern Trade stores or apply liquidation discount under FEFO rules.`,
+      answer: `**HETVAYA FEFO Expiry Risk Assessment:**\n\nFound 1 batch at risk of expiry:\n• **Amul Taaza Homogenised Toned Milk 1L** (SKU: \`SKU-AML-01\`) — Batch \`B-KOL-AML-231\` at **Kolhapur Distribution Center** has **48%** shelf life remaining (Expiry: 2027-01-20). This breaches the Store Management intake threshold of 70%.\n\n**Recommendation:** Prioritize dispatch to high-velocity Modern Trade stores or apply liquidation discount under FEFO rules.`,
       sources: [{
         title: 'Expiry Risk: Batch B-KOL-AML-231',
         source_type: 'batch_expiry',

@@ -19,13 +19,15 @@ import {
   Truck,
   Sun,
   Moon,
-  Languages
+  Languages,
+  UserCheck,
+  Bell
 } from 'lucide-react';
 import { UserRole, ThemeMode } from '../types';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../context/TranslationContext';
 
 
-export type ActiveTab = 'plans' | 'forecast' | 'map' | 'benchmark' | 'warehouse' | 'retailer' | 'dispatch' | 'import' | 'health';
+export type ActiveTab = 'plans' | 'forecast' | 'map' | 'benchmark' | 'warehouse' | 'retailer' | 'dispatch' | 'import' | 'health' | 'profile';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -35,6 +37,7 @@ interface NavbarProps {
   isOnline: boolean;
   setIsOnline: (online: boolean) => void;
   queuedEventCount: number;
+  unreadCriticalCount?: number;
   onOpenDemoModal: () => void;
   onOpenWhatIfModal: () => void;
   onTriggerSync: () => void;
@@ -50,6 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isOnline,
   setIsOnline,
   queuedEventCount,
+  unreadCriticalCount = 0,
   onOpenDemoModal,
   onOpenWhatIfModal,
   onTriggerSync,
@@ -63,7 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const roleNames: Record<UserRole, { name: string; title: string }> = {
     rohit: { name: 'Rohit Deshpande', title: 'Distribution Planner' },
     sunita: { name: 'Sunita Deshmukh', title: 'Warehouse Manager (Pune Hub)' },
-    ganesh: { name: 'Ganesh Patil', title: 'Kirana Store Owner (Kolhapur)' },
+    ganesh: { name: 'Ganesh Patil', title: 'Store Management Owner (Kolhapur)' },
     priya: { name: 'Priya Sharma', title: 'System Administrator' },
   };
 
@@ -82,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       items: [
         { id: 'dispatch' as ActiveTab, label: t('nav.dispatch', 'Smart Delivery Dispatch'), icon: Truck, badge: 'Native AI' },
         { id: 'warehouse' as ActiveTab, label: t('nav.warehouse', 'Warehouse Ops'), icon: WarehouseIcon, badge: 'FEFO' },
-        { id: 'retailer' as ActiveTab, label: t('nav.retailer', 'Kirana Field POS'), icon: Store, badge: 'Offline' },
+        { id: 'retailer' as ActiveTab, label: t('nav.retailer', 'Store Management'), icon: Store, badge: 'Offline' },
       ],
     },
     {
@@ -90,6 +94,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       items: [
         { id: 'import' as ActiveTab, label: t('nav.import', 'Data Import Studio'), icon: UploadCloud, badge: '5% Rule' },
         { id: 'health' as ActiveTab, label: t('nav.health', 'System Health & Alerts'), icon: Activity, badge: 'API' },
+        {
+          id: 'profile' as ActiveTab,
+          label: 'Profile & Critical Messages',
+          icon: UserCheck,
+          badge: unreadCriticalCount > 0 ? `${unreadCriticalCount} New` : 'Profile',
+        },
       ],
     },
   ];
@@ -167,12 +177,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* User Persona Switcher Card */}
         <div className="relative">
           <div
-            onClick={() => setPersonaDropdownOpen(!personaDropdownOpen)}
-            className="flex items-center justify-between bg-[#FAF3E0] border border-[#E7E5E4] hover:border-[#2563EB] rounded-xl p-2.5 cursor-pointer transition-all shadow-xs"
+            className={`flex items-center justify-between border rounded-xl p-2.5 transition-all shadow-xs ${
+              activeTab === 'profile'
+                ? 'bg-[#EFF6FF] border-[#2563EB] ring-1 ring-[#2563EB]'
+                : 'bg-[#FAF3E0] border-[#E7E5E4] hover:border-[#2563EB]'
+            }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs">
+            <div
+              className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
+              onClick={() => handleTabClick('profile')}
+              title="Open User Profile & Critical Messages"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs relative">
                 {userRole[0].toUpperCase()}
+                {unreadCriticalCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#DC2626] rounded-full border-2 border-white animate-pulse" />
+                )}
               </div>
               <div className="truncate text-left">
                 <p className="text-xs font-bold text-[#1E293B] truncate leading-tight">
@@ -183,9 +203,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-[10px] text-[#2563EB] font-bold shrink-0 ml-1">
-              Switch
-            </span>
+
+            <div className="flex items-center gap-1 shrink-0 ml-1">
+              <button
+                type="button"
+                onClick={() => handleTabClick('profile')}
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-[#2563EB] text-white'
+                    : 'text-[#2563EB] hover:bg-[#EFF6FF]'
+                }`}
+                title="View Profile & Critical Messages"
+              >
+                Profile
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPersonaDropdownOpen(!personaDropdownOpen);
+                }}
+                className="text-[10px] text-[#64748B] hover:text-[#1E293B] font-bold px-1.5 py-0.5 rounded hover:bg-[#FAF3E0] cursor-pointer"
+                title="Switch active user persona"
+              >
+                Switch
+              </button>
+            </div>
           </div>
 
           {/* Persona Switcher Dropdown */}
@@ -409,8 +452,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Persona Avatar */}
-          <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-xs font-bold text-white shadow-xs">
+          <div
+            onClick={() => handleTabClick('profile')}
+            className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-xs font-bold text-white shadow-xs cursor-pointer relative"
+            title="Open Profile & Critical Messages"
+          >
             {userRole[0].toUpperCase()}
+            {unreadCriticalCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#DC2626] rounded-full border border-white animate-pulse" />
+            )}
           </div>
 
           {/* Hamburger toggle */}

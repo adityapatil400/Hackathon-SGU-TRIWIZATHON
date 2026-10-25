@@ -282,7 +282,7 @@ function runSimulationPass(noiseMultiplier: number = 1.0) {
       // 1. Current Practice Planning
       // -------------------------------------------------------------
       // Rule: Ships last week's sales. Nearest warehouse only. Newest batch first (LIFO).
-      // Does not verify shelf life upon arrival (causes kirana dock rejections).
+      // Does not verify shelf life upon arrival (causes store dock rejections).
       // Does not check store backroom space (excess cases rejected at dock).
       retailers.forEach(r => {
         let storeSpaceRemaining = Math.max(0, (r.storageCases || 50) - getRetailerUsedSpace(stateCurrent.retailerStock, r.id));
@@ -309,7 +309,7 @@ function runSimulationPass(noiseMultiplier: number = 1.0) {
             batch.qtyUnits -= shippedUnits;
             stateCurrent.metrics.freightRupees += shippedCases * chosenRoute.costPerCaseRupees;
 
-            // Arrival shelf life check at kirana dock
+            // Arrival shelf life check at store dock
             const expiryDays = (new Date(batch.expiryDate).getTime() - currentSimTimeMs) / (1000 * 3600 * 24);
             const arrivalShelfPct = (expiryDays - chosenRoute.transitDays) / p.shelfLifeDays;
 
@@ -787,7 +787,7 @@ export function runBenchmark(): BenchmarkSummary {
   console.log(`| Fill Rate (%)              | ${(summary.averages.currentPractice.fillRatePct + '%').padEnd(16)} | ${(summary.averages.textbookBaseline.fillRatePct + '%').padEnd(17)} | ${(summary.averages.hetvaya.fillRatePct + '%').padEnd(14)} | ${(summary.averages.hetvaya.fillRatePct - summary.averages.currentPractice.fillRatePct > 0 ? '+' : '') + (summary.averages.hetvaya.fillRatePct - summary.averages.currentPractice.fillRatePct).toFixed(1)}pt | ${(summary.averages.hetvaya.fillRatePct - summary.averages.textbookBaseline.fillRatePct > 0 ? '+' : '') + (summary.averages.hetvaya.fillRatePct - summary.averages.textbookBaseline.fillRatePct).toFixed(1)}pt |`);
   console.log(`| Total Waste (Units)        | ${summary.averages.currentPractice.totalWasteUnits.toString().padEnd(16)} | ${summary.averages.textbookBaseline.totalWasteUnits.toString().padEnd(17)} | ${summary.averages.hetvaya.totalWasteUnits.toString().padEnd(14)} | ${summary.comparisons.wasteReductionVsCurrentPct.toString().padStart(9)}% | ${summary.comparisons.wasteReductionVsTextbookPct.toString().padStart(10)}% |`);
   console.log(`| - Expired in Warehouse     | ${summary.averages.currentPractice.expiredUnits.toString().padEnd(16)} | ${summary.averages.textbookBaseline.expiredUnits.toString().padEnd(17)} | ${summary.averages.hetvaya.expiredUnits.toString().padEnd(14)} | ${(summary.averages.hetvaya.expiredUnits - summary.averages.currentPractice.expiredUnits).toString().padStart(10)} | ${(summary.averages.hetvaya.expiredUnits - summary.averages.textbookBaseline.expiredUnits).toString().padStart(11)} |`);
-  console.log(`| - Rejected at Kirana Dock  | ${summary.averages.currentPractice.rejectedUnits.toString().padEnd(16)} | ${summary.averages.textbookBaseline.rejectedUnits.toString().padEnd(17)} | ${summary.averages.hetvaya.rejectedUnits.toString().padEnd(14)} |    -100.0% |       0.0%  |`);
+  console.log(`| - Rejected at Store Dock   | ${summary.averages.currentPractice.rejectedUnits.toString().padEnd(16)} | ${summary.averages.textbookBaseline.rejectedUnits.toString().padEnd(17)} | ${summary.averages.hetvaya.rejectedUnits.toString().padEnd(14)} |    -100.0% |       0.0%  |`);
   console.log(`| Transport Freight (₹)      | ₹${summary.averages.currentPractice.freightRupees.toString().padEnd(15)} | ₹${summary.averages.textbookBaseline.freightRupees.toString().padEnd(16)} | ₹${summary.averages.hetvaya.freightRupees.toString().padEnd(13)} | ${summary.comparisons.freightReductionVsCurrentPct.toString().padStart(9)}% | ${summary.comparisons.freightReductionVsTextbookPct.toString().padStart(10)}% |`);
   console.log(`| Lost Margin (₹)            | ₹${summary.averages.currentPractice.lostMarginRupees.toString().padEnd(15)} | ₹${summary.averages.textbookBaseline.lostMarginRupees.toString().padEnd(16)} | ₹${summary.averages.hetvaya.lostMarginRupees.toString().padEnd(13)} | ${summary.comparisons.lostMarginReductionVsCurrentPct.toString().padStart(9)}% | ${summary.comparisons.lostMarginReductionVsTextbookPct.toString().padStart(10)}% |`);
   console.log(`========================================================================================================`);

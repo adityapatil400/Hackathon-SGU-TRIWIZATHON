@@ -214,7 +214,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'nav.benchmark': 'Baseline Impact Benchmark',
     'nav.dispatch': 'Smart Delivery Dispatch',
     'nav.warehouse': 'Warehouse Picking & Ops',
-    'nav.retailer': 'Kirana POS & Offline Capture',
+    'nav.retailer': 'Store Management',
     'nav.import': 'Master Data Import Studio',
     'nav.health': 'System Health & Observability',
     'nav.decisionSuite': 'Decision Suite',
@@ -224,7 +224,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     // Header Sub-bar & Context
     'header.horizon': '7-day planning horizon • W43',
     'header.network': 'Maharashtra Logistics Grid (Pune Hub, Satara, Kolhapur)',
-    'header.margin': 'Avg Kirana Margin: 3–5%',
+    'header.margin': 'Avg Store Margin: 3–5%',
     'header.solveTime': 'Solve Time',
     'header.online': 'Online Mode',
     'header.offline': 'Offline Mode',
@@ -237,11 +237,11 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'header.whatIf': 'What-If Simulator',
 
     // Hero Banner & KPIs
-    'hero.tradeBadge': 'Indian FMCG & Kirana Traditional Trade',
+    'hero.tradeBadge': 'Indian FMCG & Traditional Store Trade',
     'hero.weeklyCycle': 'Weekly Cycle W43',
     'hero.horizonBadge': '7-Day Horizon',
     'hero.title': 'AI Marginal-Value Allocation & Demand Intelligence',
-    'hero.subtitle': 'Eliminating the kirana replenishment trap for 13M+ stores where 3–5% distributor margins mean one expired case wipes out the profit of 20+ sales. Optimized via greedy marginal-value knapsack allocation with arrival shelf-life gating.',
+    'hero.subtitle': 'Eliminating the store replenishment trap for 13M+ stores where 3–5% distributor margins mean one expired case wipes out the profit of 20+ sales. Optimized via greedy marginal-value knapsack allocation with arrival shelf-life gating.',
     'hero.quickRun': 'Quick Run Optimization',
     'hero.gisMap': 'Maharashtra GIS Map',
     'hero.shelfLifeBadge': 'Arrival Shelf-Life Verified (≥70% Min)',
@@ -286,7 +286,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'table.sku': 'SKU Code',
     'table.product': 'Product Name',
     'table.warehouse': 'Source Warehouse',
-    'table.destination': 'Destination Kirana',
+    'table.destination': 'Destination Store',
     'table.batch': 'Batch Number',
     'table.expiry': 'Expiry Date',
     'table.shelfLife': 'Arrival Shelf-Life',
@@ -317,7 +317,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Plan Generator & Filters
     'plan.filterAllWarehouses': 'All Warehouses',
-    'plan.filterAllRetailers': 'All Retailers',
+    'plan.filterAllRetailers': 'All Stores',
     'plan.filterAllProducts': 'All Products',
     'plan.filterStatus': 'Filter Status',
     'plan.filterShelfLife': 'Shelf Life Gate',
@@ -332,8 +332,8 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'plan.totalMarginProtected': 'Protected Margin',
     'plan.avgShelfLife': 'Avg Arrival Shelf Life',
 
-    // Kirana View
-    'kirana.title': 'Kirana Store Manager POS & Offline Field Capture',
+    // Store Management View
+    'kirana.title': 'Store Management POS & Offline Field Capture',
     'kirana.subtitle': 'Capturing sales, physical counts, and delivery receipts with zero data loss over weak network',
     'kirana.incomingDeliveries': 'Incoming Distributor Deliveries (In-Transit)',
     'kirana.recordSaleTitle': 'Record Daily Counter Sale (Delta)',
@@ -385,7 +385,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Modals
     'modal.reasonCardTitle': 'Explainable AI Allocation Rationale',
-    'modal.reasonCardSubtitle': 'Causal breakdown of why this specific batch was allocated to this kirana store',
+    'modal.reasonCardSubtitle': 'Causal breakdown of why this specific batch was allocated to this store',
     'modal.whatIfTitle': 'What-If Disruption Scenario Simulator',
     'modal.whatIfSubtitle': 'Simulate sudden demand spikes, highway delivery delays, or expired warehouse stock',
     'modal.demoTitle': '3-Minute Interactive Demo Walkthrough',
@@ -402,7 +402,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'nav.benchmark': 'बेसलाइन प्रभाव बेंचमार्क',
     'nav.dispatch': 'स्मार्ट डिलीवरी एजेंट डिस्पैच',
     'nav.warehouse': 'गोदाम पिकिंग एवं संचालन',
-    'nav.retailer': 'किराना पीओएस और ऑफलाइन कैप्चर',
+    'nav.retailer': 'स्टोर प्रबंधन (Store Management)',
     'nav.import': 'मास्टर डेटा आयात स्टूडियो',
     'nav.health': 'सिस्टम स्वास्थ्य एवं निगरानी',
     'nav.decisionSuite': 'निर्णय सुइट',
@@ -412,7 +412,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     // Header Sub-bar & Context
     'header.horizon': '7-दिवसीय योजना क्षितिज • सप्ताह 43',
     'header.network': 'महाराष्ट्र लॉजिस्टिक्स ग्रिड (पुणे हब, सातारा, कोल्हापुर)',
-    'header.margin': 'औसत किराना मार्जिन: 3–5%',
+    'header.margin': 'औसत स्टोर मार्जिन: 3–5%',
     'header.solveTime': 'हल करने का समय',
     'header.online': 'ऑनलाइन मोड',
     'header.offline': 'ऑफलाइन मोड',
@@ -425,11 +425,11 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'header.whatIf': 'व्हाट-इफ सिम्युलेटर',
 
     // Hero Banner & KPIs
-    'hero.tradeBadge': 'भारतीय एफएमसीजी एवं किराना पारंपरिक व्यापार',
+    'hero.tradeBadge': 'भारतीय एफएमसीजी एवं पारंपरिक स्टोर व्यापार',
     'hero.weeklyCycle': 'साप्ताहिक चक्र W43',
     'hero.horizonBadge': '7-दिवसीय क्षितिज',
     'hero.title': 'एआई सीमांत-मूल्य आवंटन एवं मांग बुद्धिमत्ता',
-    'hero.subtitle': '1.3 करोड़ से अधिक किराना दुकानों के लिए पुनःपूर्ति जाल को समाप्त करना, जहां 3-5% वितरक मार्जिन में एक समाप्त केस 20+ बिक्री के लाभ को समाप्त कर देता है। शेल्फ-लाइफ गेटिंग के साथ सीमांत-मूल्य नैपसैक आवंटन द्वारा अनुकूलित।',
+    'hero.subtitle': '1.3 करोड़ से अधिक स्टोर के लिए स्टोर पुनःपूर्ति जाल को समाप्त करना, जहां 3-5% वितरक मार्जिन में एक समाप्त केस 20+ बिक्री के लाभ को समाप्त कर देता है। शेल्फ-लाइफ गेटिंग के साथ सीमांत-मूल्य नैपसैक आवंटन द्वारा अनुकूलित।',
     'hero.quickRun': 'तुरंत आवंटन चलाएं',
     'hero.gisMap': 'महाराष्ट्र जीआईएस मैप',
     'hero.shelfLifeBadge': 'पहुंचने पर शेल्फ-लाइफ सत्यापित (≥70% न्यूनतम)',
@@ -474,7 +474,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'table.sku': 'एसकेयू कोड',
     'table.product': 'उत्पाद का नाम',
     'table.warehouse': 'स्रोत गोदाम',
-    'table.destination': 'गंतव्य किराना',
+    'table.destination': 'गंतव्य स्टोर',
     'table.batch': 'बैच संख्या',
     'table.expiry': 'समाप्ति तिथि',
     'table.shelfLife': 'शेल्फ-लाइफ शेष',
@@ -505,7 +505,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Plan Generator & Filters
     'plan.filterAllWarehouses': 'सभी गोदाम',
-    'plan.filterAllRetailers': 'सभी किराना स्टोर',
+    'plan.filterAllRetailers': 'सभी स्टोर',
     'plan.filterAllProducts': 'सभी उत्पाद',
     'plan.filterStatus': 'स्थिति फ़िल्टर',
     'plan.filterShelfLife': 'शेल्फ लाइफ द्वार',
@@ -520,8 +520,8 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'plan.totalMarginProtected': 'संरक्षित कुल मार्जिन',
     'plan.avgShelfLife': 'औसत आगमन शेल्फ लाइफ',
 
-    // Kirana View
-    'kirana.title': 'किराना स्टोर फील्ड पीओएस और ऑफलाइन कैप्चर',
+    // Store Management View
+    'kirana.title': 'स्टोर प्रबंधन फील्ड पीओएस और ऑफलाइन कैप्चर',
     'kirana.subtitle': 'कमजोर नेटवर्क में बिना किसी डेटा नुकसान के बिक्री, स्टॉक और रसीद दर्ज करें',
     'kirana.incomingDeliveries': 'आने वाली डिलीवरी (रास्ते में)',
     'kirana.recordSaleTitle': 'दैनिक बिक्री दर्ज करें',
@@ -573,7 +573,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Modals
     'modal.reasonCardTitle': 'व्याख्यात्मक एआई आवंटन तर्क',
-    'modal.reasonCardSubtitle': 'इस विशिष्ट बैच को इस किराना स्टोर में क्यों आवंटित किया गया इसका कारण',
+    'modal.reasonCardSubtitle': 'इस विशिष्ट बैच को इस स्टोर में क्यों आवंटित किया गया इसका कारण',
     'modal.whatIfTitle': 'व्हाट-इफ व्यवधान परिदृश्य सिम्युलेटर',
     'modal.whatIfSubtitle': 'अचानक मांग में उछाल, राजमार्ग डिलीवरी में देरी, या समाप्त स्टॉक का अनुकरण करें',
     'modal.demoTitle': '3-मिनट इंटरएक्टिव डेमो वॉकथ्रू',
@@ -590,7 +590,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'nav.benchmark': 'बेसलाइन प्रभाव बेंचमार्क',
     'nav.dispatch': 'स्मार्ट डिलिव्हरी एजंट डिस्पॅच',
     'nav.warehouse': 'गोदाम पिकिंग आणि ऑपरेशन्स',
-    'nav.retailer': 'किराणा पीओएस आणि ऑफलाइन नोंदणी',
+    'nav.retailer': 'स्टोअर व्यवस्थापन (Store Management)',
     'nav.import': 'मास्टर डेटा आयात स्टुडिओ',
     'nav.health': 'सिस्टम आरोग्य आणि निरीक्षण',
     'nav.decisionSuite': 'निर्णय संच',
@@ -600,7 +600,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     // Header Sub-bar & Context
     'header.horizon': '७-दिवसीय नियोजन क्षितिज • आठवडा ४३',
     'header.network': 'महाराष्ट्र लॉजिस्टिक्स ग्रिड (पुणे हब, सातारा, कोल्हापूर)',
-    'header.margin': 'सरासरी किराणा नफा: ३–५%',
+    'header.margin': 'सरासरी स्टोअर नफा: ३–५%',
     'header.solveTime': 'निर्णय वेळ',
     'header.online': 'ऑनलाइन मोड',
     'header.offline': 'ऑफलाइन मोड',
@@ -613,11 +613,11 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'header.whatIf': 'व्हॉट-इफ सिम्युलेटर',
 
     // Hero Banner & KPIs
-    'hero.tradeBadge': 'भारतीय एफएमसीजी आणि किराणा पारंपरिक व्यापार',
+    'hero.tradeBadge': 'भारतीय एफएमसीजी आणि पारंपरिक स्टोअर व्यापार',
     'hero.weeklyCycle': 'साप्ताहिक चक्र W43',
     'hero.horizonBadge': '७-दिवसीय क्षितिज',
     'hero.title': 'एआय सीमांत-मूल्य वाटप आणि मागणी बुद्धिमत्ता',
-    'hero.subtitle': '१.३ कोटींहून अधिक किराणा दुकानांसाठी पुनर्भरण सापळा संपवणे, जेथे ३-५% वितरक नफ्यात एक मुदत संपलेला बॉक्स २०+ विक्रीचा नफा पुसून टाकतो. आगमन शेल्फ-लाइफ गेटिंगसह सीमांत-मूल्य नॅपसॅक वाटपाद्वारे अनुकूलित.',
+    'hero.subtitle': '१.३ कोटींहून अधिक स्टोअरसाठी पुनर्भरण सापळा संपवणे, जेथे ३-५% वितरक नफ्यात एक मुदत संपलेला बॉक्स २०+ विक्रीचा नफा पुसून टाकतो. आगमन शेल्फ-लाइफ गेटिंगसह सीमांत-मूल्य नॅपसॅक वाटपाद्वारे अनुकूलित.',
     'hero.quickRun': 'त्वरित वाटप चालवा',
     'hero.gisMap': 'महाराष्ट्र जीआयएस नकाशा',
     'hero.shelfLifeBadge': 'आगमनावर शेल्फ-लाइफ प्रमाणित (≥७०% किमान)',
@@ -662,7 +662,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'table.sku': 'एसकेयू कोड',
     'table.product': 'उत्पादनाचे नाव',
     'table.warehouse': 'मूळ गोदाम',
-    'table.destination': 'किराणा दुकान',
+    'table.destination': 'गंतव्य स्टोअर',
     'table.batch': 'बॅच क्रमांक',
     'table.expiry': 'मुदत संपण्याची तारीख',
     'table.shelfLife': 'शेल्फ-लाइफ शिल्लक',
@@ -693,7 +693,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Plan Generator & Filters
     'plan.filterAllWarehouses': 'सर्व गोदामे',
-    'plan.filterAllRetailers': 'सर्व किराणा दुकाने',
+    'plan.filterAllRetailers': 'सर्व स्टोअर',
     'plan.filterAllProducts': 'सर्व उत्पादने',
     'plan.filterStatus': 'स्थितीनुसार फिल्टर',
     'plan.filterShelfLife': 'शेल्फ लाइफ द्वार',
@@ -708,8 +708,8 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'plan.totalMarginProtected': 'संरक्षित नफा',
     'plan.avgShelfLife': 'सरासरी शेल्फ लाइफ',
 
-    // Kirana View
-    'kirana.title': 'किराणा दुकान व्यवस्थापक पीओएस आणि ऑफलाइन नोंद',
+    // Store Management View
+    'kirana.title': 'स्टोअर व्यवस्थापन पीओएस आणि ऑफलाइन नोंद',
     'kirana.subtitle': 'कमकुवत नेटवर्कवर डेटा न गमावता विक्री, शिल्लक स्टॉक आणि डिलिव्हरी नोंदवा',
     'kirana.incomingDeliveries': 'येणारी डिलिव्हरी (मार्गावर)',
     'kirana.recordSaleTitle': 'दैनिक विक्री नोंदवा',
@@ -761,7 +761,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
 
     // Modals
     'modal.reasonCardTitle': 'स्पष्टीकरणात्मक एआय वाटप कारण',
-    'modal.reasonCardSubtitle': 'हा विशिष्ट बॅच या किराणा दुकानाला का दिला गेला याचे कारण',
+    'modal.reasonCardSubtitle': 'हा विशिष्ट बॅच या स्टोअरला का दिला गेला याचे कारण',
     'modal.whatIfTitle': 'व्हॉट-इफ व्यत्यय परिस्थिती सिम्युलेटर',
     'modal.whatIfSubtitle': 'अचानक मागणी वाढ, महामार्ग विलंब किंवा मुदत संपलेला माल अनुकरण करा',
     'modal.demoTitle': '३-मिनिट परस्परसंवादी डेमो वॉकथ्रू',

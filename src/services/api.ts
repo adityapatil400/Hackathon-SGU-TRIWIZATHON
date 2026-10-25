@@ -14,6 +14,11 @@ import {
   AllocationLine,
   ReasonCard,
   UserRole,
+  CriticalMessage,
+  CriticalMessagesSummary,
+  MessagePriority,
+  MessageStatus,
+  RelatedModule,
 } from '../types';
 
 import {
@@ -49,7 +54,7 @@ export const PERSONA_MAP: Record<UserRole, UserPersonaConfig> = {
   ganesh: {
     email: 'ganesh@flowgrid.internal',
     role: 'OPERATOR',
-    name: 'Ganesh Patil (Kirana Retailer)',
+    name: 'Ganesh Patil (Store Management)',
   },
   priya: {
     email: 'priya@flowgrid.internal',
@@ -373,6 +378,13 @@ export const FlowGridAPI = {
   },
 
   /**
+   * Fetch Authoritative Demand Forecasts (FR-08 / Section 12)
+   */
+  async getForecasts(): Promise<DemandForecast[]> {
+    return INITIAL_FORECASTS;
+  },
+
+  /**
    * Run Master AI FMCG Distribution Intelligence Engine (Problem Statement 2)
    */
   async runDistributionEngine(params: FMCGEngineRunParams = {}): Promise<FMCGEngineResult> {
@@ -457,7 +469,7 @@ export const FlowGridAPI = {
   },
 
   /**
-   * Record Store Sales Event (Kirana Terminal)
+   * Record Store Sales Event (Store Terminal)
    */
   async recordSale(storeCode: string, sku: string, unitsSold: number): Promise<any> {
     try {
@@ -600,8 +612,368 @@ export const FlowGridAPI = {
       },
     ];
   },
+
+  /**
+   * Fetch Critical Messages with Role-based filtering
+   */
+  async getCriticalMessages(params?: {
+    priority?: MessagePriority;
+    module?: RelatedModule;
+    status?: MessageStatus;
+    userRole?: UserRole;
+  }): Promise<CriticalMessage[]> {
+    const role = params?.userRole || currentPersona;
+    const searchParams = new URLSearchParams();
+    if (params?.priority) searchParams.append('priority', params.priority);
+    if (params?.module) searchParams.append('module', params.module);
+    if (params?.status) searchParams.append('status', params.status);
+    searchParams.append('user_role', role);
+
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/messages?${searchParams.toString()}`, {
+        headers: getHeaders(role),
+      });
+      if (res.ok) {
+        const data: CriticalMessage[] = await res.json();
+        saveMessagesToLocalStore(data);
+        return data;
+      }
+    } catch (e) {
+      console.warn('Backend messages fetch failed, utilizing local fallback:', e);
+    }
+
+    return getFallbackMessages(role, params);
+  },
+
+  /**
+   * Fetch Critical Messages Summary KPI statistics
+   */
+  async getCriticalMessagesSummary(userRole?: UserRole): Promise<CriticalMessagesSummary> {
+    const role = userRole || currentPersona;
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/messages/summary?user_role=${role}`, {
+        headers: getHeaders(role),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Backend messages summary fetch failed, computing from fallback:', e);
+    }
+
+    const messages = await FlowGridAPI.getCriticalMessages({ userRole: role });
+    return {
+      total: messages.length,
+      critical_count: messages.filter(m => m.priority === 'CRITICAL').length,
+      high_count: messages.filter(m => m.priority === 'HIGH').length,
+      medium_count: messages.filter(m => m.priority === 'MEDIUM').length,
+      new_count: messages.filter(m => m.status === 'NEW').length,
+      acknowledged_count: messages.filter(m => m.status === 'ACKNOWLEDGED').length,
+      resolved_count: messages.filter(m => m.status === 'RESOLVED').length,
+    };
+  },
+
+  /**
+   * Acknowledge a Critical Message
+   */
+  async acknowledgeCriticalMessage(id: string, userRole?: UserRole): Promise<CriticalMessage> {
+    const role = userRole || currentPersona;
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/messages/${id}/acknowledge?user_role=${role}`, {
+        method: 'POST',
+        headers: getHeaders(role),
+      });
+      if (res.ok) {
+        const updated: CriticalMessage = await res.json();
+        updateFallbackMessage(updated);
+        return updated;
+      }
+    } catch (e) {
+      console.warn('Backend message acknowledgement failed, updating locally:', e);
+    }
+
+    return updateFallbackMessageStatus(id, 'ACKNOWLEDGED', role);
+  },
+
+  /**
+   * Resolve a Critical Message (restricted to Admin or authorized operational managers)
+   */
+  async resolveCriticalMessage(id: string, userRole?: UserRole): Promise<CriticalMessage> {
+    const role = userRole || currentPersona;
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/messages/${id}/resolve?user_role=${role}`, {
+        method: 'POST',
+        headers: getHeaders(role),
+      });
+      if (res.ok) {
+        const updated: CriticalMessage = await res.json();
+        updateFallbackMessage(updated);
+        return updated;
+      } else if (res.status === 403) {
+        const err = await res.json().catch(() => ({ detail: 'Administrator permission required' }));
+        throw new Error(err.detail || 'Administrator permission required to resolve this infrastructure issue.');
+      }
+    } catch (e: any) {
+      if (e?.message?.includes('Administrator permission')) {
+        throw e;
+      }
+      console.warn('Backend message resolution failed, updating locally:', e);
+    }
+
+    return updateFallbackMessageStatus(id, 'RESOLVED', role);
+  },
+
+  /**
+   * Reset critical messages to baseline fixtures
+   */
+  async resetCriticalMessages(): Promise<CriticalMessage[]> {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/messages/reset`, {
+        method: 'POST',
+        headers: getHeaders('priya'),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.removeItem(LOCAL_MESSAGES_STORAGE_KEY);
+        return data;
+      }
+    } catch {}
+    localStorage.removeItem(LOCAL_MESSAGES_STORAGE_KEY);
+    return getFallbackMessages('priya');
+  },
 };
 
 export const HetvayaAPI = FlowGridAPI;
+
+// -------------------------------------------------------------
+// Resilient Local Fallback Storage & Mock Data for Messages
+// -------------------------------------------------------------
+const LOCAL_MESSAGES_STORAGE_KEY = 'hetvaya_critical_messages_store';
+
+export const INITIAL_CRITICAL_MESSAGES: CriticalMessage[] = [
+  {
+    id: 'MSG-2026-001',
+    title: 'FEFO Expiry Risk: Amul Milk 1L at Kolhapur Depot',
+    description: 'Batch B-KOL-AML-231 at Kolhapur Distribution Center has fallen to 48% remaining shelf-life (Expiry: 2027-01-20). Breaches Store intake policy of 70% minimum shelf life.',
+    priority: 'CRITICAL',
+    module: 'Inventory',
+    affected_nodes: ['WH-KOL', 'SKU-AML-01', 'Batch B-KOL-AML-231'],
+    target_roles: ['priya', 'ADMIN', 'sunita', 'OPERATOR', 'rohit', 'PLANNER'],
+    action_required: 'Reroute batch to Modern Trade (D-Mart Kolhapur) under liquidation discount before 50% breach.',
+    admin_only: false,
+    timestamp: '2026-10-25T08:15:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-002',
+    title: 'Monsoon Rockslide on Khandala Ghat Corridor (NH-48)',
+    description: 'Heavy monsoon rainfall triggered boulder fall in Borghat section. Highway authority reports 6.5h lane blockage between Pune Hub and Kolhapur depots.',
+    priority: 'CRITICAL',
+    module: 'Delivery',
+    affected_nodes: ['Corridor Pune-Kolhapur', 'NH-48 Khandala', 'Truck MH-12-Q-4091'],
+    target_roles: ['priya', 'ADMIN', 'rohit', 'PLANNER', 'sunita', 'OPERATOR'],
+    action_required: 'Activate Bhor Ghat secondary bypass or trigger dynamic vehicle reassignment to prevent cold-chain thaw.',
+    admin_only: false,
+    timestamp: '2026-10-25T07:45:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-003',
+    title: 'Silent Store POS Device: Mahadev Store (Solapur)',
+    description: 'Terminal POS-SOL-004 has failed to transmit telemetry heartbeats for 82 consecutive hours (>72h threshold). Store is flagged as Needs Review.',
+    priority: 'CRITICAL',
+    module: 'POS Sync',
+    affected_nodes: ['STORE-MH-SOL-001', 'Terminal POS-SOL-004', 'Solapur Cluster'],
+    target_roles: ['priya', 'ADMIN', 'ganesh', 'VIEWER', 'rohit', 'PLANNER'],
+    action_required: 'Auto-cap store replenishment at median historical demand and dispatch field agent for hardware inspection.',
+    admin_only: false,
+    timestamp: '2026-10-25T06:30:00Z',
+    status: 'ACKNOWLEDGED',
+    acknowledged_at: '2026-10-25T07:00:00Z',
+    acknowledged_by: 'Rohit Deshpande',
+  },
+  {
+    id: 'MSG-2026-004',
+    title: 'Demand Surge Spike: Aashirvaad Atta 5kg (+42%)',
+    description: 'Festive season demand spike observed in Pune-Satara urban retail cluster. Quantile demand model forecasts potential stockout within 48 hours.',
+    priority: 'HIGH',
+    module: 'Forecasting',
+    affected_nodes: ['SKU-ATT-05', 'Pune Central Hub', 'Satara Stores'],
+    target_roles: ['priya', 'ADMIN', 'rohit', 'PLANNER'],
+    action_required: 'Trigger secondary allocation run with 280-case buffer release from Pune buffer warehouse.',
+    admin_only: false,
+    timestamp: '2026-10-25T05:50:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-005',
+    title: 'Outbound Staging Backlog at Pune Hub (W-PUN)',
+    description: 'Dock Bay 3 pallet conveyor experiencing 45% throughput degradation. Morning dispatch run for 18 Store locations delayed by ~90 minutes.',
+    priority: 'HIGH',
+    module: 'Warehouse',
+    affected_nodes: ['WH-PUN', 'Dock Bay 3', 'Conveyor Line A'],
+    target_roles: ['priya', 'ADMIN', 'sunita', 'OPERATOR'],
+    action_required: 'Reassign picking crews from bulk storage to staging bay 2.',
+    admin_only: false,
+    timestamp: '2026-10-25T05:20:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-006',
+    title: 'Offline IndexedDB Event Queue Overflow: Kolhapur Store',
+    description: 'Store STORE-MH-KOL-001 has 38 unmerged offline sales events queued locally during regional internet connectivity disruption.',
+    priority: 'HIGH',
+    module: 'POS Sync',
+    affected_nodes: ['STORE-MH-KOL-001', 'Ganesh Store', 'Device Queue'],
+    target_roles: ['priya', 'ADMIN', 'ganesh', 'VIEWER'],
+    action_required: 'Trigger manual background synchronization once cellular 4G uplink stabilizes.',
+    admin_only: false,
+    timestamp: '2026-10-25T04:45:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-007',
+    title: 'Decision Service Solver p95 Latency Advisory',
+    description: 'OR-Tools Knapsack allocation solver p95 latency reached 148ms during large statewide scenario seed. System SLA remains within 250ms threshold.',
+    priority: 'MEDIUM',
+    module: 'System Health',
+    affected_nodes: ['FastAPI Core', 'Decision Engine', 'Solver Worker'],
+    target_roles: ['priya', 'ADMIN'],
+    action_required: 'Monitor CPU utilization across solver nodes during next replenishment run.',
+    admin_only: true,
+    timestamp: '2026-10-25T04:00:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-008',
+    title: 'Inter-Depot Stock Rebalance Opportunity: Fortune Sunflower Oil',
+    description: 'Satara Regional Warehouse holding 18 days of forward cover while Kolhapur stores face 2.1 days. Inter-depot transit of 150 cases recommended.',
+    priority: 'MEDIUM',
+    module: 'Inventory',
+    affected_nodes: ['WH-SAT', 'WH-KOL', 'SKU-OIL-01'],
+    target_roles: ['priya', 'ADMIN', 'rohit', 'PLANNER', 'sunita', 'OPERATOR'],
+    action_required: 'Review marginal allocation proposal to balance cross-dock transportation costs.',
+    admin_only: false,
+    timestamp: '2026-10-25T03:30:00Z',
+    status: 'NEW',
+  },
+  {
+    id: 'MSG-2026-009',
+    title: 'Reverse Freight Return Window: Satara to Pune Hub',
+    description: 'Tata Ace EV (MH-14-GH-2211) completed delivery to Satara stores with 80-case return capacity. Potential carrier savings: ₹3,400.',
+    priority: 'MEDIUM',
+    module: 'Delivery',
+    affected_nodes: ['Route Satara-Pune', 'Vehicle MH-14-GH-2211', 'Driver Sachin Mane'],
+    target_roles: ['priya', 'ADMIN', 'rohit', 'PLANNER', 'sunita', 'OPERATOR'],
+    action_required: 'Assign empty crate return or backhaul replenishment to active driver before 11:30 AM.',
+    admin_only: false,
+    timestamp: '2026-10-25T03:00:00Z',
+    status: 'RESOLVED',
+    acknowledged_at: '2026-10-25T03:15:00Z',
+    acknowledged_by: 'Rohit Deshpande',
+    resolved_at: '2026-10-25T03:45:00Z',
+    resolved_by: 'Priya Sharma',
+  },
+];
+
+function getStoredMessages(): CriticalMessage[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_MESSAGES_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return [...INITIAL_CRITICAL_MESSAGES];
+}
+
+function saveMessagesToLocalStore(messages: CriticalMessage[]): void {
+  try {
+    localStorage.setItem(LOCAL_MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+  } catch {}
+}
+
+function getFallbackMessages(
+  userRole: string,
+  params?: { priority?: string; module?: string; status?: string }
+): CriticalMessage[] {
+  const store = getStoredMessages();
+  const normRole = (userRole || 'priya').toLowerCase().trim();
+
+  let filtered = store;
+  if (normRole !== 'priya' && normRole !== 'admin') {
+    filtered = store.filter(m => {
+      const targetRoles = m.target_roles.map(r => r.toLowerCase());
+      if (targetRoles.includes(normRole)) return true;
+      if (normRole === 'rohit' && (targetRoles.includes('planner') || targetRoles.includes('rohit'))) return true;
+      if (normRole === 'sunita' && (targetRoles.includes('operator') || targetRoles.includes('sunita'))) return true;
+      if (normRole === 'ganesh' && (targetRoles.includes('viewer') || targetRoles.includes('ganesh'))) return true;
+      return false;
+    });
+  }
+
+  if (params?.priority) {
+    filtered = filtered.filter(m => m.priority === params.priority);
+  }
+  if (params?.module) {
+    filtered = filtered.filter(m => m.module === params.module);
+  }
+  if (params?.status) {
+    filtered = filtered.filter(m => m.status === params.status);
+  }
+
+  return [...filtered].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+function updateFallbackMessage(updated: CriticalMessage): void {
+  const store = getStoredMessages();
+  const idx = store.findIndex(m => m.id === updated.id);
+  if (idx !== -1) {
+    store[idx] = updated;
+  } else {
+    store.unshift(updated);
+  }
+  saveMessagesToLocalStore(store);
+}
+
+function updateFallbackMessageStatus(
+  id: string,
+  newStatus: MessageStatus,
+  userRole: string
+): CriticalMessage {
+  const store = getStoredMessages();
+  const msg = store.find(m => m.id === id);
+  if (!msg) {
+    throw new Error(`Message with ID ${id} not found.`);
+  }
+
+  const normRole = (userRole || 'rohit').toLowerCase().trim();
+  if (newStatus === 'RESOLVED' && msg.admin_only && normRole !== 'priya' && normRole !== 'admin') {
+    throw new Error('Administrator permission required to resolve this infrastructure issue.');
+  }
+
+  const roleNameMap: Record<string, string> = {
+    rohit: 'Rohit Deshpande',
+    sunita: 'Sunita Deshmukh',
+    ganesh: 'Ganesh Patil',
+    priya: 'Priya Sharma',
+  };
+  const userName = roleNameMap[normRole] || normRole.toUpperCase();
+  const now = new Date().toISOString();
+
+  if (newStatus === 'ACKNOWLEDGED') {
+    msg.status = 'ACKNOWLEDGED';
+    msg.acknowledged_at = now;
+    msg.acknowledged_by = userName;
+  } else if (newStatus === 'RESOLVED') {
+    msg.status = 'RESOLVED';
+    msg.resolved_at = now;
+    msg.resolved_by = userName;
+  }
+
+  saveMessagesToLocalStore(store);
+  return msg;
+}
+
 
 

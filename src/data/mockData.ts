@@ -126,7 +126,7 @@ export const INITIAL_RETAILERS: Retailer[] = [
     serviceClass: 'C',
     city: 'Kolhapur',
     minShelfLifePct: 0.70, // Requires at least 70% remaining shelf life
-    storageCases: 45, // Limited kirana backroom
+    storageCases: 45, // Limited store backroom
     currentStorageUsed: 14,
     paymentScore: 0.94,
     lastSyncAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 mins ago
@@ -688,7 +688,7 @@ export const INITIAL_ALERTS: SystemAlert[] = [
     openedAt: '2026-10-24T14:15:00Z',
     type: 'TIME_BASED',
     severity: 'warning',
-    message: 'Mahadev Kirana (Solapur) has been silent for 80 hours',
+    message: 'Mahadev Store (Solapur) has been silent for 80 hours',
     details: 'Latest on-hand data is >72h old. Replenishment automatically capped at median demand to prevent over-shipping.',
     active: true,
   },

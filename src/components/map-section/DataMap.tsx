@@ -31,6 +31,8 @@ interface DataMapProps {
   onSelect: (id: string) => void;
   onPopupClosed: (id: string) => void;
   defaultMapTypeId?: MapTypeId;
+  mapTypeId?: MapTypeId;
+  onMapTypeIdChange?: (mapTypeId: MapTypeId) => void;
 }
 
 const MIN_SIZE = 10;
@@ -72,9 +74,20 @@ export function DataMap({
   onSelect,
   onPopupClosed,
   defaultMapTypeId = "satellite",
+  mapTypeId: controlledMapTypeId,
+  onMapTypeIdChange,
 }: DataMapProps) {
   const mapRef = useRef<MapRef>(null);
-  const [mapTypeId, setMapTypeId] = useState<MapTypeId>(defaultMapTypeId);
+  const [internalMapTypeId, setInternalMapTypeId] = useState<MapTypeId>(
+    controlledMapTypeId ?? defaultMapTypeId ?? "satellite",
+  );
+  const activeMapTypeId = controlledMapTypeId ?? internalMapTypeId ?? "satellite";
+
+  const handleSetMapTypeId = (type: MapTypeId) => {
+    setInternalMapTypeId(type);
+    onMapTypeIdChange?.(type);
+  };
+
   const [showRoutes, setShowRoutes] = useState<boolean>(true);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
 
@@ -137,10 +150,10 @@ export function DataMap({
         {/* Satellite Mode (Default) */}
         <button
           type="button"
-          onClick={() => setMapTypeId("satellite")}
+          onClick={() => handleSetMapTypeId("satellite")}
           className={cn(
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
-            mapTypeId === "satellite"
+            activeMapTypeId === "satellite"
               ? "bg-[#DC2626] text-white shadow-xs"
               : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
@@ -152,10 +165,10 @@ export function DataMap({
         {/* Hybrid Mode (Satellite + Labels) */}
         <button
           type="button"
-          onClick={() => setMapTypeId("hybrid")}
+          onClick={() => handleSetMapTypeId("hybrid")}
           className={cn(
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
-            mapTypeId === "hybrid"
+            activeMapTypeId === "hybrid"
               ? "bg-[#DC2626] text-white shadow-xs"
               : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
@@ -167,10 +180,10 @@ export function DataMap({
         {/* Standard Road Map */}
         <button
           type="button"
-          onClick={() => setMapTypeId("roadmap")}
+          onClick={() => handleSetMapTypeId("roadmap")}
           className={cn(
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
-            mapTypeId === "roadmap" || mapTypeId === "map"
+            activeMapTypeId === "roadmap" || activeMapTypeId === "map"
               ? "bg-[#DC2626] text-white shadow-xs"
               : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
@@ -203,7 +216,8 @@ export function DataMap({
         ref={mapRef}
         center={INITIAL_CENTER}
         zoom={6.4}
-        mapTypeId={mapTypeId}
+        mapTypeId={activeMapTypeId}
+        defaultMapTypeId="satellite"
         attributionControl={{ compact: true }}
       >
         <MapControls position="bottom-right" showZoom showLocate />
@@ -219,7 +233,7 @@ export function DataMap({
               color={
                 route.isActive
                   ? "#DC2626"
-                  : mapTypeId === "roadmap"
+                  : activeMapTypeId === "roadmap" || activeMapTypeId === "map"
                   ? "#2563EB"
                   : "#38BDF8"
               }
@@ -296,7 +310,7 @@ export function DataMap({
           );
         })}
 
-        {/* 3. Retailer Locations (Kirana, Modern Trade, Distributors) */}
+        {/* 3. Retailer Locations (Store Management, Modern Trade, Distributors) */}
         {rows.map((row) => {
           const size = markerSize(row.value, maxValue);
           const isActive = row.id === hoveredId || row.id === selectedId;

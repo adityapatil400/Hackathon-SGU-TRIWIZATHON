@@ -101,7 +101,7 @@ FlowGrid features a native local Ollama LLM integration (`models/ollama_intellig
 
 ### Module 6: Enterprise Light UI & Multilingual Translation Engine
 - **Warm Cream & White Theme**: Enterprise-grade light UI palette (White `#FFFFFF` cards, Warm Cream `#FFF8E7` page background, Light Cream `#FAF3E0` headers, Dark Navy `#1E293B` text, Blue `#2563EB` navigation, Red `#DC2626` primary actions, and Success Green `#15803D`).
-- **Multilingual Support (EN / HI / MR)**: Complete multilingual translation across English, Hindi (`हिंदी`), and Marathi (`मराठी`) with locale-aware currency (`₹`) and number formatting, synchronized across desktop, mobile, and Kirana POS views with persistent `localStorage` preference.
+- **Multilingual Support (EN / HI / MR)**: Complete multilingual translation across English, Hindi (`हिंदी`), and Marathi (`मराठी`) with locale-aware currency (`₹`) and number formatting, synchronized across desktop, mobile, and Store Management POS views with persistent `localStorage` preference.
 - **Google Maps Satellite Mode**: Real satellite imagery with interactive distribution corridor routes, warehouse hubs, and retail demand markers.
 
 ---
@@ -410,7 +410,7 @@ npm run lint
 
 | Subsystem | Primary Path | Tech Stack / Components | Role |
 | :--- | :--- | :--- | :--- |
-| **Frontend UI** | [`src/`](src/) | React 19, TypeScript, Tailwind CSS v4, Recharts | Planner console, Kirana POS, Google Maps Satellite, What-If Simulator |
+| **Frontend UI** | [`src/`](src/) | React 19, TypeScript, Tailwind CSS v4, Recharts | Planner console, Store Management POS, Google Maps Satellite, What-If Simulator |
 | **Decision & ML Engine** | [`models/`](models/) | PyTorch, Scikit-learn, Joblib | Neural demand forecaster, anomaly detector & stock optimizer |
 | **Authoritative Backend** | [`app/`](app/) | FastAPI, SQLAlchemy 2.0, Pydantic | Inventory store, reservation authority & plan commitment lifecycle |
 | **Database Migrations** | [`alembic/`](alembic/) | Alembic, PostgreSQL / SQLite | Authoritative schema evolution and constraint enforcement |

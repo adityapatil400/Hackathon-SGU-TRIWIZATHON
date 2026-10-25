@@ -7,10 +7,11 @@ import { PlanGeneratorView } from './components/PlanGeneratorView';
 import { ForecastReviewView } from './components/ForecastReviewView';
 import { BaselineComparisonView } from './components/BaselineComparisonView';
 import { WarehouseOpsView } from './components/WarehouseOpsView';
-import { KiranaRetailerView } from './components/KiranaRetailerView';
+import { StoreManagementView } from './components/KiranaRetailerView';
 import { ImportStudioView } from './components/ImportStudioView';
 import { AdminHealthView } from './components/AdminHealthView';
 import { SmartDispatchView } from './components/SmartDispatchView';
+import { ProfileView } from './components/ProfileView';
 import { MapSection } from './components/map-section/MapSection';
 import { DemoWalkthroughModal } from './components/DemoWalkthroughModal';
 import { WhatIfSimulatorModal } from './components/WhatIfSimulatorModal';
@@ -58,6 +59,7 @@ export const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [backendStatus, setBackendStatus] = useState<BackendHealthStatus | null>(null);
   const [theme, setTheme] = useState<ThemeMode>('day');
+  const [unreadCriticalCount, setUnreadCriticalCount] = useState<number>(0);
 
   const handleToggleTheme = () => setTheme(prev => prev === 'night' ? 'day' : 'night');
 
@@ -65,6 +67,22 @@ export const App: React.FC = () => {
   useEffect(() => {
     setActiveUserRole(userRole);
   }, [userRole]);
+
+  // Sync unread critical messages badge count
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUnread = async () => {
+      try {
+        const sum = await FlowGridAPI.getCriticalMessagesSummary(userRole);
+        if (isMounted && sum) {
+          setUnreadCriticalCount(sum.new_count);
+        }
+      } catch {
+        // Fallback silently if offline probe
+      }
+    };
+    fetchUnread();
+  }, [userRole, activeTab]);
 
   // Core Data State
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -126,17 +144,33 @@ export const App: React.FC = () => {
 
       if (health.isOnline) {
         try {
-          const [p, w, r, b] = await Promise.all([
+          const [p, w, r, b, f] = await Promise.all([
             FlowGridAPI.getProducts(),
             FlowGridAPI.getWarehouses(),
             FlowGridAPI.getRetailers(),
             FlowGridAPI.getBatches(),
+            FlowGridAPI.getForecasts(),
           ]);
           if (!isMounted) return;
-          if (p.length > 0) setProducts(p);
-          if (w.length > 0) setWarehouses(w);
-          if (r.length > 0) setRetailers(r);
-          if (b.length > 0) setBatches(b);
+          if (p.length > 0) {
+            const fetchedSkus = new Set(p.map((item: Product) => item.sku));
+            setProducts([...p, ...INITIAL_PRODUCTS.filter(item => !fetchedSkus.has(item.sku))]);
+          }
+          if (w.length > 0) {
+            const fetchedIds = new Set(w.map((item: Warehouse) => item.id));
+            setWarehouses([...w, ...INITIAL_WAREHOUSES.filter(item => !fetchedIds.has(item.id))]);
+          }
+          if (r.length > 0) {
+            const fetchedIds = new Set(r.map((item: Retailer) => item.id));
+            setRetailers([...r, ...INITIAL_RETAILERS.filter(item => !fetchedIds.has(item.id))]);
+          }
+          if (b.length > 0) {
+            const fetchedIds = new Set(b.map((item: InventoryBatch) => item.id));
+            setBatches([...b, ...INITIAL_BATCHES.filter(item => !fetchedIds.has(item.id))]);
+          }
+          if (f.length > 0) {
+            setForecasts(f);
+          }
         } catch (e) {
           console.warn('Real backend catalog fetch notice:', e);
         }
@@ -445,7 +479,7 @@ export const App: React.FC = () => {
     setQueuedEvents(getStoredEventQueue());
   };
 
-  // Handler: Kirana Sale Entry (FR-04 single sales path)
+  // Handler: Store Management Sale Entry (FR-04 single sales path)
   const handleRecordSale = (sku: string, unitsSold: number) => {
     enqueueEvent(
       'SALE',
@@ -455,7 +489,7 @@ export const App: React.FC = () => {
     setQueuedEvents(getStoredEventQueue());
   };
 
-  // Handler: Kirana Stock Count
+  // Handler: Store Management Stock Count
   const handleRecordStockCount = (sku: string, closingUnits: number) => {
     enqueueEvent(
       'STOCK_COUNT',
@@ -465,7 +499,7 @@ export const App: React.FC = () => {
     setQueuedEvents(getStoredEventQueue());
   };
 
-  // Handler: Kirana Receipt Confirmation
+  // Handler: Store Management Receipt Confirmation
   const handleRecordReceipt = (
     shipmentId: string,
     acceptedCases: number,
@@ -502,7 +536,7 @@ export const App: React.FC = () => {
     setQueuedEvents(result.processedEvents.filter(e => e.status === 'QUEUED'));
   };
 
-  const currentKirana = retailers.find(r => r.id === 'RET-GAN') || retailers[0];
+  const currentStore = retailers.find(r => r.id === 'RET-GAN') || retailers[0];
   const { t } = useTranslation();
 
   return (
@@ -518,6 +552,7 @@ export const App: React.FC = () => {
         isOnline={isOnline}
         setIsOnline={setIsOnline}
         queuedEventCount={queuedEvents.filter(e => e.status === 'QUEUED').length}
+        unreadCriticalCount={unreadCriticalCount}
         onOpenDemoModal={() => setIsDemoModalOpen(true)}
         onOpenWhatIfModal={() => setIsWhatIfModalOpen(true)}
         onTriggerSync={handleTriggerSync}
@@ -541,9 +576,10 @@ export const App: React.FC = () => {
                activeTab === 'benchmark' ? t('nav.benchmark', 'Baseline Impact Benchmark') :
                activeTab === 'dispatch' ? t('nav.dispatch', 'Smart Delivery Agent & Native Driver Dispatch') :
                activeTab === 'warehouse' ? t('nav.warehouse', 'Warehouse Picking & Operations') :
-               activeTab === 'retailer' ? t('nav.retailer', 'Kirana Field POS & Capture') :
+               activeTab === 'retailer' ? t('nav.retailer', 'Store Management & Capture') :
                activeTab === 'import' ? t('nav.import', 'Master Data Import Studio') :
-               t('nav.health', 'System Health & Monitoring')}
+               activeTab === 'health' ? t('nav.health', 'System Health & Monitoring') :
+               t('nav.profile', 'User Profile & Critical Messages • Operational Jurisdiction & Real-Time Alerts')}
             </span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
             <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>{t('header.horizon', '7-day planning horizon • W43')}</span>
@@ -554,7 +590,7 @@ export const App: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>{t('header.margin', 'Avg Kirana Margin: 3–5%')}</span>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>{t('header.margin', 'Avg Store Margin: 3–5%')}</span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
             <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>
               {t('header.solveTime', 'Solve Time')}: <strong className={theme === 'night' ? 'text-indigo-400' : 'text-[#15803D]'}>{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong>
@@ -639,8 +675,8 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'retailer' && (
-            <KiranaRetailerView
-              currentRetailer={currentKirana}
+            <StoreManagementView
+              currentRetailer={currentStore}
               products={products}
               inTransitShipments={inTransitShipments}
               onRecordSale={handleRecordSale}
@@ -653,11 +689,54 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'import' && (
-            <ImportStudioView />
+            <ImportStudioView
+              batches={batches}
+              products={products}
+              retailers={retailers}
+              warehouses={warehouses}
+              routes={routes}
+              onCommitBatches={(newBatches) => {
+                const existingMap = new Map(batches.map(b => [`${b.warehouseId}::${b.batchNo}`, b]));
+                for (const nb of newBatches) {
+                  existingMap.set(`${nb.warehouseId}::${nb.batchNo}`, nb);
+                }
+                setBatches(Array.from(existingMap.values()));
+              }}
+              onCommitProducts={(newProds) => {
+                const existingMap = new Map(products.map(p => [p.sku, p]));
+                for (const np of newProds) {
+                  existingMap.set(np.sku, np);
+                }
+                setProducts(Array.from(existingMap.values()));
+              }}
+              onCommitRetailers={(newRets) => {
+                const existingMap = new Map(retailers.map(r => [r.id, r]));
+                for (const nr of newRets) {
+                  existingMap.set(nr.id, nr);
+                }
+                setRetailers(Array.from(existingMap.values()));
+              }}
+              onCommitRoutes={(newRoutes) => {
+                const existingMap = new Map(routes.map(r => [`${r.warehouseId}::${r.retailerId}`, r]));
+                for (const nr of newRoutes) {
+                  existingMap.set(`${nr.warehouseId}::${nr.retailerId}`, nr);
+                }
+                setRoutes(Array.from(existingMap.values()));
+              }}
+            />
           )}
 
           {activeTab === 'health' && (
             <AdminHealthView />
+          )}
+
+          {activeTab === 'profile' && (
+            <ProfileView
+              userRole={userRole}
+              setUserRole={setUserRole}
+              theme={theme}
+              onNavigateTab={setActiveTab}
+            />
           )}
         </main>
 

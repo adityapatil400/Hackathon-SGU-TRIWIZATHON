@@ -1,5 +1,5 @@
-export type ServiceClass = 'A' | 'B' | 'C'; // A = Modern Trade, B = General Trade, C = Small Kirana
-export type RetailerType = 'kirana' | 'modern_trade' | 'distributor';
+export type ServiceClass = 'A' | 'B' | 'C'; // A = Modern Trade, B = General Trade, C = Store Management / General Trade
+export type RetailerType = 'kirana' | 'store_management' | 'modern_trade' | 'distributor';
 export type ForecastMethod = 'HistGradientBoosting' | 'MovingAverage' | 'Bootstrap' | 'PeerTransfer';
 export type PlanStatus = 'RUNNING' | 'READY' | 'PROVISIONAL' | 'APPROVED' | 'FAILED';
 export type SolverStatus = 'OPTIMAL' | 'FEASIBLE' | 'TIMEOUT';
@@ -316,5 +316,46 @@ export interface NativeDriver {
     potentialSavingsRupees: number;
   };
 }
+
+export type MessagePriority = 'CRITICAL' | 'HIGH' | 'MEDIUM';
+export type MessageStatus = 'NEW' | 'ACKNOWLEDGED' | 'RESOLVED';
+export type RelatedModule =
+  | 'Inventory'
+  | 'Forecasting'
+  | 'Delivery'
+  | 'Warehouse'
+  | 'POS Sync'
+  | 'Store Management'
+  | 'Kirana'
+  | 'System Health';
+
+export interface CriticalMessage {
+  id: string;
+  title: string;
+  description: string;
+  priority: MessagePriority;
+  module: RelatedModule;
+  affected_nodes: string[];
+  target_roles: string[];
+  action_required?: string | null;
+  admin_only: boolean;
+  timestamp: string;
+  status: MessageStatus;
+  acknowledged_at?: string | null;
+  acknowledged_by?: string | null;
+  resolved_at?: string | null;
+  resolved_by?: string | null;
+}
+
+export interface CriticalMessagesSummary {
+  total: number;
+  critical_count: number;
+  high_count: number;
+  medium_count: number;
+  new_count: number;
+  acknowledged_count: number;
+  resolved_count: number;
+}
+
 
 

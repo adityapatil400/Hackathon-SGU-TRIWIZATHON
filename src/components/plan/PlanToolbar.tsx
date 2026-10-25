@@ -77,7 +77,7 @@ export const PlanToolbar: React.FC<PlanToolbarProps> = ({
             type="text"
             value={filters.searchQuery}
             onChange={e => onFilterChange({ searchQuery: e.target.value })}
-            placeholder={t('searchPlaceholder') || "Search by SKU, Product name, Kirana Retailer, or Warehouse Hub..."}
+            placeholder={t('searchPlaceholder') || "Search by SKU, Product name, Store Management, or Warehouse Hub..."}
             className="w-full bg-[#FAF3E0]/40 border border-[#E7E5E4] hover:border-[#2563EB]/50 focus:border-[#2563EB] rounded-xl pl-9 pr-9 py-2 text-xs text-[#1E293B] placeholder-[#64748B] focus:outline-none transition-colors"
           />
           {filters.searchQuery && (

@@ -1,109 +1,195 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   UploadCloud,
   AlertTriangle,
   XCircle,
   ShieldCheck,
   Sparkles,
-  FileSpreadsheet
+  FileSpreadsheet,
+  CheckCircle2,
+  Database,
+  ArrowRight
 } from 'lucide-react';
 import { useTranslation } from '../context/TranslationContext';
+import { Product, Warehouse, Retailer, Route, InventoryBatch } from '../types';
+import {
+  INITIAL_WAREHOUSES,
+  INITIAL_PRODUCTS,
+  INITIAL_RETAILERS,
+  INITIAL_BATCHES,
+  INITIAL_ROUTES
+} from '../data/mockData';
+import {
+  processMasterDataImport,
+  generateCleanDemoCSV,
+  generate3PercentErrorCSV,
+  generate18PercentErrorCSV,
+  ImportProcessingResult,
+  ENTITY_SCHEMAS
+} from '../services/importValidator';
 
-interface ValidationError {
-  row: number;
-  field: string;
-  message: string;
+export interface ImportStudioViewProps {
+  batches?: InventoryBatch[];
+  products?: Product[];
+  retailers?: Retailer[];
+  warehouses?: Warehouse[];
+  routes?: Route[];
+  onCommitBatches?: (newBatches: InventoryBatch[]) => void;
+  onCommitProducts?: (newProducts: Product[]) => void;
+  onCommitRetailers?: (newRetailers: Retailer[]) => void;
+  onCommitRoutes?: (newRoutes: Route[]) => void;
 }
 
-export const ImportStudioView: React.FC = () => {
+export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
+  batches = INITIAL_BATCHES,
+  products = INITIAL_PRODUCTS,
+  retailers = INITIAL_RETAILERS,
+  warehouses = INITIAL_WAREHOUSES,
+  routes = INITIAL_ROUTES,
+  onCommitBatches,
+  onCommitProducts,
+  onCommitRetailers,
+  onCommitRoutes,
+}) => {
   const { t, formatNumber } = useTranslation();
   const [selectedKind, setSelectedKind] = useState<string>('batches');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [importResult, setImportResult] = useState<{
-    importId: string;
-    fileName: string;
-    sha256: string;
-    totalRows: number;
-    rowsAccepted: number;
-    rowsRejected: number;
-    errorRatePct: number;
-    committed: boolean;
-    errors: ValidationError[];
-  } | null>(null);
+  const [importResult, setImportResult] = useState<ImportProcessingResult | null>(null);
+  const [importedHashes, setImportedHashes] = useState<Set<string>>(new Set());
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sampleDatasets = [
     { kind: 'batches', name: 'inventory_batches.csv', desc: 'Warehouse batch stock, shelf-life expiry dates, versions' },
-    { kind: 'sales', name: 'sales_daily.csv', desc: '84 days historical daily sales per kirana store and SKU' },
+    { kind: 'sales', name: 'sales_daily.csv', desc: '84 days historical daily sales per store and SKU' },
     { kind: 'products', name: 'products.csv', desc: 'SKU definitions, case sizes, standard space units, perishable flags' },
-    { kind: 'retailers', name: 'retailers.csv', desc: 'Kirana accounts, service class (A/B/C), min shelf-life %, storage limits' },
+    { kind: 'retailers', name: 'retailers.csv', desc: 'Store Management accounts, service class (A/B/C), min shelf-life %, storage limits' },
     { kind: 'routes', name: 'routes.csv', desc: 'Warehouse-to-retailer freight ₹/case and transit days' },
   ];
 
-  const handleSimulateUpload = (withErrors: boolean) => {
-    setIsProcessing(true);
-    setImportResult(null);
-
-    setTimeout(() => {
-      setIsProcessing(false);
-      const totalRows = 200;
-      const rejected = withErrors ? 6 : 0; // 6 / 200 = 3% (<= 5% -> Committed!)
-      const accepted = totalRows - rejected;
-      const errorRate = (rejected / totalRows) * 100;
-
-      const sampleErrors: ValidationError[] = withErrors
-        ? [
-            { row: 14, field: 'expiryDate', message: 'Missing expiry date on perishable FMCG SKU' },
-            { row: 42, field: 'warehouseId', message: 'Foreign key lookup failed: Unknown WH ID "WH-MUM"' },
-            { row: 89, field: 'qtyUnits', message: 'Negative inventory count rejected (-24 units)' },
-            { row: 112, field: 'caseSize', message: 'Case size must be >= 1' },
-            { row: 156, field: 'expiryDate', message: 'Batch expired before cycle start date' },
-            { row: 184, field: 'sku', message: 'Duplicate batch number on same warehouse' },
-          ]
-        : [];
-
-      setImportResult({
-        importId: `IMP-${Date.now().toString().slice(-6)}`,
-        fileName: `${selectedKind}_demo_v1.5.csv`,
-        sha256: '8f7e2a91c530b420f18d73b64ecf001193d2581ad79e830e23b2c1450a8d42ef',
-        totalRows,
-        rowsAccepted: accepted,
-        rowsRejected: rejected,
-        errorRatePct: errorRate,
-        committed: errorRate <= 5,
-        errors: sampleErrors,
-      });
-    }, 600);
+  // Prepare active validation context from live state
+  const validationContext = {
+    warehouses,
+    products,
+    retailers,
+    routes,
+    existingBatches: batches,
+    importedFileHashes: importedHashes,
   };
 
-  const handleSimulateCatastrophicUpload = () => {
+  /**
+   * Execute real import workflow with the 5% transactional rule
+   */
+  const handleExecuteImport = async (csvContent: string, fileName: string) => {
     setIsProcessing(true);
     setImportResult(null);
 
-    setTimeout(() => {
-      setIsProcessing(false);
-      const totalRows = 100;
-      const rejected = 18; // 18% (> 5% -> Transaction Rolled Back!)
+    try {
+      const result = await processMasterDataImport(
+        csvContent,
+        selectedKind,
+        fileName,
+        validationContext
+      );
 
-      const sampleErrors: ValidationError[] = [
-        { row: 3, field: 'date', message: 'Invalid ISO date string format' },
-        { row: 7, field: 'retailerId', message: 'Foreign key mismatch' },
-        { row: 12, field: 'unitsSold', message: 'Negative sales quantity not permitted' },
-        { row: 25, field: 'sku', message: 'Unknown SKU code' },
-        { row: 31, field: 'date', message: 'Corrupt row encoding' },
-      ];
+      // Enforce Transactional State Commit
+      if (result.committed) {
+        // Track SHA-256 for duplicate re-import protection (FR-02)
+        setImportedHashes(prev => new Set([...prev, result.sha256]));
 
+        // Commit valid records to application state
+        if (selectedKind === 'batches' && result.committedBatches && onCommitBatches) {
+          onCommitBatches(result.committedBatches);
+        } else if (selectedKind === 'products' && result.committedProducts && onCommitProducts) {
+          onCommitProducts(result.committedProducts);
+        } else if (selectedKind === 'retailers' && result.committedRetailers && onCommitRetailers) {
+          onCommitRetailers(result.committedRetailers);
+        } else if (selectedKind === 'routes' && result.committedRoutes && onCommitRoutes) {
+          onCommitRoutes(result.committedRoutes);
+        }
+      }
+
+      setImportResult(result);
+    } catch (err: any) {
       setImportResult({
-        importId: `IMP-REJECTED-${Date.now().toString().slice(-4)}`,
-        fileName: 'corrupted_sales_import.csv',
-        sha256: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
-        totalRows,
+        importId: `IMP-ERR-${Date.now().toString().slice(-4)}`,
+        fileName,
+        sha256: '0000000000000000000000000000000000000000000000000000000000000000',
+        targetEntity: selectedKind,
+        totalRows: 0,
         rowsAccepted: 0,
-        rowsRejected: rejected,
-        errorRatePct: 18.0,
+        rowsRejected: 0,
+        errorRatePct: 100,
         committed: false,
-        errors: sampleErrors,
+        isDuplicateFile: false,
+        hasCriticalError: true,
+        errors: [{ row: 0, field: 'execution', message: err?.message || 'Unexpected import processing error' }],
+        parsedRows: [],
+        committedRecordsCount: 0,
+        inventoryStateChanged: false,
+        summaryMessage: 'Internal processing failure. Transaction aborted.',
       });
-    }, 600);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  /**
+   * Action 1: Load Clean Demo Dataset (100% Valid -> 0% Errors)
+   */
+  const handleLoadCleanDemo = () => {
+    setSelectedFile(null);
+    const csv = generateCleanDemoCSV(selectedKind);
+    const fileName = `${selectedKind}_demo_clean_v1.5.csv`;
+    handleExecuteImport(csv, fileName);
+  };
+
+  /**
+   * Action 2: Test 3% Row Errors (Valid Rows Commit, <= 5% Threshold)
+   */
+  const handleTest3PercentErrors = () => {
+    setSelectedFile(null);
+    const csv = generate3PercentErrorCSV(selectedKind);
+    const fileName = `${selectedKind}_test_3pct_errors.csv`;
+    handleExecuteImport(csv, fileName);
+  };
+
+  /**
+   * Action 3: Test 18% Errors (Entire File Rejected, > 5% Threshold)
+   */
+  const handleTest18PercentErrors = () => {
+    setSelectedFile(null);
+    const csv = generate18PercentErrorCSV(selectedKind);
+    const fileName = `${selectedKind}_corrupted_18pct_errors.csv`;
+    handleExecuteImport(csv, fileName);
+  };
+
+  /**
+   * File Upload / Drag-and-Drop Handler
+   */
+  const handleFileSelected = (file: File) => {
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) {
+        handleExecuteImport(text, file.name);
+      }
+    };
+    reader.onerror = () => {
+      alert('Unable to read selected file. Please select a valid CSV or plain text file.');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelected(e.dataTransfer.files[0]);
+    }
   };
 
   return (
@@ -128,7 +214,11 @@ export const ImportStudioView: React.FC = () => {
           <span className="text-xs text-[#64748B] font-semibold">Target Entity:</span>
           <select
             value={selectedKind}
-            onChange={e => setSelectedKind(e.target.value)}
+            onChange={e => {
+              setSelectedKind(e.target.value);
+              setImportResult(null);
+              setSelectedFile(null);
+            }}
             className="bg-[#FFF8E7] border border-[#E7E5E4] text-[#1E293B] font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#2563EB] cursor-pointer"
           >
             {sampleDatasets.map(d => (
@@ -148,11 +238,33 @@ export const ImportStudioView: React.FC = () => {
           <p className="text-[#64748B] mt-0.5 leading-relaxed">
             If <strong>&le; 5%</strong> of rows fail validation, the valid rows are committed in one transaction and rejected rows are flagged with file:row diagnostics. If <strong>&gt; 5%</strong> fail, nothing is committed—preventing half-updated stock states from corrupting planning runs.
           </p>
+          <p className="text-[11px] text-[#2563EB] mt-1.5 font-medium">
+            Runtime Scope: Valid transactions update the active application catalog state immediately. File SHA-256 hashes are tracked to prevent duplicate re-imports.
+          </p>
         </div>
       </div>
 
       {/* Drop Zone & Test Scenarios */}
-      <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-[#E7E5E4] text-center space-y-4 shadow-xs">
+      <div
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
+        className={`bg-white p-8 rounded-2xl border-2 border-dashed transition-colors text-center space-y-4 shadow-xs ${
+          isDragOver ? 'border-[#2563EB] bg-[#EFF6FF]/40' : 'border-[#E7E5E4]'
+        }`}
+      >
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept=".csv,.txt,.xlsx"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleFileSelected(e.target.files[0]);
+            }
+          }}
+        />
+
         <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center mx-auto">
           <UploadCloud className="w-6 h-6" />
         </div>
@@ -164,12 +276,29 @@ export const ImportStudioView: React.FC = () => {
           <p className="text-xs text-[#64748B] mt-1">
             Drag and drop CSV or XLSX files (max 10MB) or run a demo scenario below
           </p>
+          {selectedFile && (
+            <p className="text-xs font-semibold text-[#2563EB] mt-1 font-mono">
+              Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          {/* Primary Action Button: Red */}
+          {/* File Picker trigger */}
           <button
-            onClick={() => handleSimulateUpload(false)}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#1E293B] bg-white border border-[#E7E5E4] hover:bg-[#FAF3E0] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#2563EB]" />
+            <span>Browse CSV File</span>
+          </button>
+
+          {/* Action 1: Load Clean Demo Dataset */}
+          <button
+            type="button"
+            onClick={handleLoadCleanDemo}
             disabled={isProcessing}
             className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
@@ -177,20 +306,22 @@ export const ImportStudioView: React.FC = () => {
             <span>Load Clean Demo Dataset (100% Valid)</span>
           </button>
 
-          {/* Secondary Action Button */}
+          {/* Action 2: Test 3% Row Errors */}
           <button
-            onClick={() => handleSimulateUpload(true)}
+            type="button"
+            onClick={handleTest3PercentErrors}
             disabled={isProcessing}
             className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#1E293B] bg-white border border-[#2563EB] hover:bg-[#EFF6FF] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            title="Demonstrate <= 5% error rule where valid rows commit and 6 errors are reported"
+            title="Demonstrate <= 5% error rule where valid rows commit and 3 errors are reported"
           >
             <AlertTriangle className="w-4 h-4 text-[#EA580C]" />
             <span>Test 3% Row Errors (Valid Rows Commit)</span>
           </button>
 
-          {/* Warning / Destructive action */}
+          {/* Action 3: Test 18% Errors */}
           <button
-            onClick={handleSimulateCatastrophicUpload}
+            type="button"
+            onClick={handleTest18PercentErrors}
             disabled={isProcessing}
             className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             title="Demonstrate > 5% error rule where entire file is rolled back"
@@ -201,9 +332,18 @@ export const ImportStudioView: React.FC = () => {
         </div>
       </div>
 
+      {/* Processing State */}
+      {isProcessing && (
+        <div className="bg-white p-8 rounded-2xl border border-[#E7E5E4] text-center space-y-3 shadow-xs">
+          <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-semibold text-[#1E293B]">Parsing file, checking schema, and verifying foreign keys...</p>
+        </div>
+      )}
+
       {/* Validation Result Inspection */}
-      {importResult && (
+      {importResult && !isProcessing && (
         <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs animate-in fade-in">
+          {/* Result Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E7E5E4] pb-3">
             <div>
               <div className="flex items-center gap-2">
@@ -215,6 +355,11 @@ export const ImportStudioView: React.FC = () => {
                 }`}>
                   {importResult.committed ? 'TRANSACTION COMMITTED' : 'IMPORT ROLLED BACK'}
                 </span>
+                {importResult.isDuplicateFile && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF3E0] text-[#EA580C] border border-[#E7E5E4]">
+                    DUPLICATE IGNORED
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-[#64748B] font-mono mt-0.5">
                 SHA-256: {importResult.sha256}
@@ -224,6 +369,24 @@ export const ImportStudioView: React.FC = () => {
             <div className="text-right">
               <span className="text-xs text-[#64748B]">Import Batch ID:</span>
               <span className="block font-mono text-xs font-bold text-[#2563EB]">{importResult.importId}</span>
+            </div>
+          </div>
+
+          {/* Summary Banner */}
+          <div className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+            importResult.committed
+              ? 'bg-emerald-50 border-emerald-200 text-[#15803D]'
+              : 'bg-red-50 border-red-200 text-[#DC2626]'
+          }`}>
+            <div className="flex items-center gap-2">
+              {importResult.committed ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+              <span className="font-semibold">{importResult.summaryMessage}</span>
+            </div>
+
+            <div className="text-right shrink-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider block">
+                {importResult.inventoryStateChanged ? 'State Changed: YES' : 'State Changed: NO'}
+              </span>
             </div>
           </div>
 
@@ -252,12 +415,64 @@ export const ImportStudioView: React.FC = () => {
             </div>
           </div>
 
+          {/* Parsed Rows Preview */}
+          {importResult.parsedRows.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#2563EB]" />
+                  <span>Parsed Rows Preview (First {importResult.parsedRows.length} Rows)</span>
+                </h4>
+                <span className="text-[11px] text-[#64748B]">
+                  Schema Target: <strong className="text-[#1E293B]">{importResult.targetEntity}</strong>
+                </span>
+              </div>
+
+              <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-[#E7E5E4] bg-[#FAF3E0] text-[#64748B] font-semibold">
+                        <th className="py-2 px-3">Row</th>
+                        <th className="py-2 px-3">Validation Status</th>
+                        {Object.keys(importResult.parsedRows[0].data).map((key) => (
+                          <th key={key} className="py-2 px-3">{key}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E7E5E4] font-mono text-[11px]">
+                      {importResult.parsedRows.map((row) => (
+                        <tr key={row.rowNumber} className={`hover:bg-[#FFF8E7]/50 ${!row.isValid ? 'bg-red-50/50' : ''}`}>
+                          <td className="py-2 px-3 font-bold text-[#64748B]">{row.rowNumber}</td>
+                          <td className="py-2 px-3">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              row.isValid
+                                ? 'bg-emerald-100 text-[#15803D]'
+                                : 'bg-red-100 text-[#DC2626]'
+                            }`}>
+                              {row.isValid ? 'VALID' : 'INVALID'}
+                            </span>
+                          </td>
+                          {Object.keys(row.data).map((key) => (
+                            <td key={key} className="py-2 px-3 truncate max-w-[150px]">
+                              {row.data[key] || <span className="text-[#94A3B8] italic">empty</span>}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Diagnostics Table */}
           {importResult.errors.length > 0 && (
             <div className="space-y-2 pt-2">
               <h4 className="text-xs font-bold text-[#DC2626] uppercase tracking-wider flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-[#DC2626]" />
-                <span>Row-Level Diagnostics (file:row)</span>
+                <span>Row-Level Diagnostics (file:row) • {importResult.errors.length} Issue(s) Reported</span>
               </h4>
 
               <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">

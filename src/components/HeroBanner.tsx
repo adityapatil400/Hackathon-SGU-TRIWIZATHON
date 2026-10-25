@@ -47,7 +47,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         <div className="lg:col-span-7 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
-              {t('hero.tradeBadge', 'Indian FMCG & Kirana Traditional Trade')}
+              {t('hero.tradeBadge', 'Indian FMCG & Traditional Store Trade')}
             </span>
             <span className="text-xs text-[#64748B] flex items-center gap-1 font-medium bg-[#FFF8E7] px-2 py-0.5 rounded-full border border-[#E7E5E4]">
               <Clock className="w-3.5 h-3.5 text-[#2563EB]" /> {t('hero.weeklyCycle', 'Weekly Cycle W43')}
@@ -62,7 +62,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           </h1>
 
           <p className="text-sm md:text-base text-[#64748B] leading-relaxed">
-            {t('hero.subtitle', 'Eliminating the kirana replenishment trap for 13M+ stores where 3–5% distributor margins mean one expired case wipes out the profit of 20+ sales. Optimized via greedy marginal-value knapsack allocation with arrival shelf-life gating.')}
+            {t('hero.subtitle', 'Eliminating the store replenishment trap for 13M+ stores where 3–5% distributor margins mean one expired case wipes out the profit of 20+ sales. Optimized via greedy marginal-value knapsack allocation with arrival shelf-life gating.')}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">

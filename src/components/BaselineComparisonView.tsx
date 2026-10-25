@@ -145,7 +145,7 @@ export const BaselineComparisonView: React.FC = () => {
           </div>
           <h3 className="text-base font-extrabold text-[#1E293B]">{t('benchmark.flowgridEngine', 'HETVAYA Engine')}</h3>
           <p className="text-xs text-[#64748B]">
-            Marginal-value knapsack allocation • Arrival shelf-life per kirana • Lateness-weighed sourcing • Space limit
+            Marginal-value knapsack allocation • Arrival shelf-life per store • Lateness-weighed sourcing • Space limit
           </p>
 
           <div className="space-y-3 pt-2 border-t border-[#E7E5E4] text-xs">

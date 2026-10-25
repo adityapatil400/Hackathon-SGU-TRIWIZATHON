@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
+import { X, Minus, Plus, Locate, Maximize, Loader2, Layers } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -45,9 +45,43 @@ function loadMapLibre() {
 
 if (typeof window !== "undefined") loadMapLibre().catch(() => {});
 
-type MapTypeId = "satellite" | "hybrid" | "roadmap" | "map";
+type MapTypeId =
+  | "satellite"
+  | "hybrid"
+  | "roadmap"
+  | "map"
+  | "terrain"
+  | "SATELLITE"
+  | "HYBRID"
+  | "ROADMAP"
+  | "TERRAIN";
 
-const GOOGLE_MAPS_STYLES: Record<"satellite" | "hybrid" | "roadmap", MapLibreGL.StyleSpecification> = {
+const google = {
+  maps: {
+    MapTypeId: {
+      SATELLITE: "satellite",
+      HYBRID: "hybrid",
+      ROADMAP: "roadmap",
+      TERRAIN: "terrain",
+    } as const,
+  },
+};
+
+function normalizeMapTypeId(
+  type?: string,
+): "satellite" | "hybrid" | "roadmap" | "terrain" {
+  if (!type) return "satellite";
+  const normalized = type.toLowerCase();
+  if (normalized === "map" || normalized === "roadmap") return "roadmap";
+  if (normalized === "hybrid") return "hybrid";
+  if (normalized === "terrain") return "terrain";
+  return "satellite";
+}
+
+const GOOGLE_MAPS_STYLES: Record<
+  "satellite" | "hybrid" | "roadmap" | "terrain",
+  MapLibreGL.StyleSpecification
+> = {
   satellite: {
     version: 8,
     sources: {
@@ -136,6 +170,37 @@ const GOOGLE_MAPS_STYLES: Record<"satellite" | "hybrid" | "roadmap", MapLibreGL.
         id: "google-roadmap-layer",
         type: "raster",
         source: "google-roadmap",
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  },
+  terrain: {
+    version: 8,
+    sources: {
+      "google-terrain": {
+        type: "raster",
+        tiles: [
+          "https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+          "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+          "https://mt2.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+          "https://mt3.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+        ],
+        tileSize: 256,
+        attribution: "© Google Maps Terrain",
+        maxzoom: 22,
+      },
+    },
+    layers: [
+      {
+        id: "google-terrain-bg",
+        type: "background",
+        paint: { "background-color": "#f8f9fa" },
+      },
+      {
+        id: "google-terrain-layer",
+        type: "raster",
+        source: "google-terrain",
         minzoom: 0,
         maxzoom: 22,
       },
@@ -260,6 +325,8 @@ type MapContextValue = {
   mapLib: MapLibreModule | null;
   isLoaded: boolean;
   resolvedTheme: Theme;
+  mapTypeId?: MapTypeId;
+  setMapTypeId?: (type: MapTypeId) => void;
 };
 
 const MapContext = createContext<MapContextValue | null>(null);
@@ -333,9 +400,17 @@ type MapProps = {
   onViewportChange?: (viewport: MapViewport) => void;
   /**
    * Google Maps type ID: "satellite" (default), "hybrid", or "roadmap" / "map".
-   * Configures the visual style to real Google Maps imagery or road map.
+   * Configures the visual style to real Google Maps satellite imagery or road map.
    */
   mapTypeId?: MapTypeId;
+  /**
+   * Default Google Maps type ID: defaults to "satellite".
+   */
+  defaultMapTypeId?: MapTypeId;
+  /**
+   * Callback fired when mapTypeId changes.
+   */
+  onMapTypeIdChange?: (mapTypeId: MapTypeId) => void;
   /** Show a loading indicator on the map */
   loading?: boolean;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
@@ -367,7 +442,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     children,
     className,
     theme: themeProp,
-    mapTypeId,
+    mapTypeId: controlledMapTypeId,
+    defaultMapTypeId = "satellite",
+    onMapTypeIdChange,
     styles,
     blank = false,
     projection,
@@ -396,11 +473,26 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
   const stableStyles = useStableValue(styles);
 
+  const [internalMapTypeId, setInternalMapTypeId] = useState<MapTypeId>(
+    controlledMapTypeId ?? defaultMapTypeId ?? "satellite",
+  );
+
+  const onMapTypeIdChangeRef = useRef(onMapTypeIdChange);
+  onMapTypeIdChangeRef.current = onMapTypeIdChange;
+
+  const handleSetMapTypeId = useCallback((type: MapTypeId) => {
+    setInternalMapTypeId(type);
+    onMapTypeIdChangeRef.current?.(type);
+  }, []);
+
+  const activeMapTypeId = controlledMapTypeId ?? internalMapTypeId ?? "satellite";
+  const normalizedKey = normalizeMapTypeId(activeMapTypeId);
+
   const mapStyles = useMemo(() => {
-    // If explicit mapTypeId is provided, use Google Maps style
-    if (mapTypeId) {
-      const key = (mapTypeId === "map" ? "roadmap" : mapTypeId) as keyof typeof GOOGLE_MAPS_STYLES;
-      const selected = GOOGLE_MAPS_STYLES[key] ?? GOOGLE_MAPS_STYLES.satellite;
+    // If activeMapTypeId is provided, use Google Maps style
+    if (activeMapTypeId) {
+      const selected =
+        GOOGLE_MAPS_STYLES[normalizedKey] ?? GOOGLE_MAPS_STYLES.satellite;
       return { dark: selected, light: selected };
     }
     // Explicit styles win. Otherwise `blank` opts into the transparent
@@ -415,13 +507,23 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       return { dark: blankMapStyle, light: blankMapStyle };
     }
     return defaultStyles;
-  }, [mapTypeId, stableStyles, blank]);
+  }, [activeMapTypeId, normalizedKey, stableStyles, blank]);
 
   const initOptionsRef = useRef({ props, viewport, resolvedTheme, mapStyles });
   initOptionsRef.current = { props, viewport, resolvedTheme, mapStyles };
 
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
+
+  // Keep map responsive and correctly sized in its dashboard container
+  useEffect(() => {
+    if (!mapInstance || !containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      mapInstance.resize();
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [mapInstance]);
 
   // Initialize the map once maplibre-gl has loaded
   useEffect(() => {
@@ -553,8 +655,18 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       mapLib,
       isLoaded: isLoaded && isStyleLoaded,
       resolvedTheme,
+      mapTypeId: activeMapTypeId,
+      setMapTypeId: handleSetMapTypeId,
     }),
-    [mapInstance, mapLib, isLoaded, isStyleLoaded, resolvedTheme],
+    [
+      mapInstance,
+      mapLib,
+      isLoaded,
+      isStyleLoaded,
+      resolvedTheme,
+      activeMapTypeId,
+      handleSetMapTypeId,
+    ],
   );
 
   return (
@@ -1127,6 +1239,88 @@ function MapControls({
   );
 }
 
+type MapTypeControlProps = {
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  className?: string;
+  allowSatellite?: boolean;
+  allowHybrid?: boolean;
+  allowRoadmap?: boolean;
+};
+
+function MapTypeControl({
+  position = "top-left",
+  className,
+  allowSatellite = true,
+  allowHybrid = true,
+  allowRoadmap = true,
+}: MapTypeControlProps) {
+  const { mapTypeId, setMapTypeId } = useMap();
+  const current = normalizeMapTypeId(mapTypeId);
+
+  return (
+    <div
+      className={cn(
+        "absolute z-10 flex flex-wrap items-center gap-1.5 p-1 bg-white/95 backdrop-blur-md border border-[#E7E5E4] rounded-xl shadow-md text-xs font-semibold",
+        positionClasses[position],
+        className,
+      )}
+    >
+      <div className="flex items-center gap-0.5 px-1 text-[11px] font-bold text-[#64748B] border-r border-[#E7E5E4] pr-2 mr-0.5">
+        <Layers className="w-3.5 h-3.5 text-[#2563EB]" />
+        <span>Layer:</span>
+      </div>
+
+      {allowSatellite && (
+        <button
+          type="button"
+          onClick={() => setMapTypeId?.("satellite")}
+          className={cn(
+            "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
+            current === "satellite"
+              ? "bg-[#DC2626] text-white shadow-xs"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]",
+          )}
+          title="Google Maps Satellite Mode (Default)"
+        >
+          <span>🛰️ Satellite</span>
+        </button>
+      )}
+
+      {allowHybrid && (
+        <button
+          type="button"
+          onClick={() => setMapTypeId?.("hybrid")}
+          className={cn(
+            "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
+            current === "hybrid"
+              ? "bg-[#DC2626] text-white shadow-xs"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]",
+          )}
+          title="Google Maps Hybrid Mode (Satellite + Roads & Labels)"
+        >
+          <span>🌐 Hybrid</span>
+        </button>
+      )}
+
+      {allowRoadmap && (
+        <button
+          type="button"
+          onClick={() => setMapTypeId?.("roadmap")}
+          className={cn(
+            "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
+            current === "roadmap"
+              ? "bg-[#DC2626] text-white shadow-xs"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]",
+          )}
+          title="Google Maps Road Map"
+        >
+          <span>🗺️ Map</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 function CompassButton({ onClick }: { onClick: () => void }) {
   const { map } = useMap();
   const compassRef = useRef<SVGSVGElement>(null);
@@ -1531,12 +1725,22 @@ function MapRoute({
   useEffect(() => {
     if (!isLoaded || !map) return;
 
+    try {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    } catch {
+      // ignore
+    }
+
     map.addSource(sourceId, {
       type: "geojson",
       data: {
         type: "Feature",
         properties: {},
-        geometry: { type: "LineString", coordinates: [] },
+        geometry: {
+          type: "LineString",
+          coordinates: coordinates.length < 2 ? [] : coordinates,
+        },
       },
     });
 
@@ -2821,6 +3025,7 @@ export {
   MarkerLabel,
   MapPopup,
   MapControls,
+  MapTypeControl,
   MapRoute,
   RouteProgress,
   RouteMarker,
@@ -2828,6 +3033,7 @@ export {
   MapGeoJSON,
   MapClusterLayer,
   GOOGLE_MAPS_STYLES,
+  google,
 };
 
 export type {
@@ -2847,6 +3053,7 @@ export type {
   MarkerTooltipProps,
   MarkerLabelProps,
   MapControlsProps,
+  MapTypeControlProps,
   MapPopupProps,
   MapRouteProps,
   RouteProgressProps,

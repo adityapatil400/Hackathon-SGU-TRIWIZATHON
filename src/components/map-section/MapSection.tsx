@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchRegionStats } from "@/data/regionStats";
 
 import { DataMap } from "./DataMap";
+import { type MapTypeId } from "@/components/ui/map";
 import { RankedBarTable, RankedBarTableSkeleton } from "./RankedBarTable";
 import {
   ALL_CATEGORIES,
@@ -25,7 +26,8 @@ const CATEGORY_LABEL = "Channel";
 const CATEGORY_COLORS: Record<string, string> = {
   "Modern Trade": "#2563EB", // blue accent
   Distributor: "#15803D", // green success
-  Kirana: "#EA580C", // orange warning/attention accent
+  "Store Management": "#EA580C", // orange warning/attention accent
+  Kirana: "#EA580C", // backward compatibility
 };
 const FALLBACK_COLORS = ["#2563EB", "#EA580C", "#EAB308", "#15803D", "#DC2626"];
 
@@ -113,6 +115,7 @@ export function MapSection() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
   const [sort, setSort] = useState<SortState>({ key: "value", dir: "desc" });
+  const [mapTypeId, setMapTypeId] = useState<MapTypeId>("satellite");
 
   const data = state.status === "success" ? state.data : EMPTY;
 
@@ -173,12 +176,15 @@ export function MapSection() {
               <CardTitle className="text-base font-bold text-[#1E293B]">
                 Distribution Network & Retailer Demand Map
               </CardTitle>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] border border-emerald-200">
-                🛰️ Satellite View
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803D] border border-emerald-200 shadow-2xs">
+                {mapTypeId === "satellite" && "🛰️ Google Satellite Mode (Default)"}
+                {mapTypeId === "hybrid" && "🌐 Google Hybrid Mode"}
+                {(mapTypeId === "roadmap" || mapTypeId === "map") && "🗺️ Google Road Map"}
+                {mapTypeId === "terrain" && "⛰️ Google Terrain"}
               </span>
             </div>
             <CardDescription className="text-xs text-[#64748B] mt-0.5">
-              {VALUE_LABEL} across Maharashtra warehouses, supply corridors, and retail kiranas. Switch between Satellite, Hybrid, and Map modes.
+              {VALUE_LABEL} across Maharashtra warehouses, supply corridors, and retail stores. Default visual style configured to Google Maps Satellite imagery.
             </CardDescription>
           </div>
         </div>
@@ -253,6 +259,9 @@ export function MapSection() {
               <Skeleton className="h-full w-full rounded-lg" />
             ) : (
               <DataMap
+                mapTypeId={mapTypeId}
+                onMapTypeIdChange={setMapTypeId}
+                defaultMapTypeId="satellite"
                 rows={visible}
                 totalCount={ranked.length}
                 maxValue={maxValue}

@@ -60,7 +60,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
 
   const translations = {
     en: {
-      title: 'Kirana Store Manager POS & Offline Field Capture',
+      title: 'Store Management POS & Offline Field Capture',
       subtitle: 'Capturing sales, physical counts, and delivery receipts with zero data loss over weak network',
       incomingDeliveries: 'Incoming Distributor Deliveries (In-Transit)',
       recordSale: 'Record Daily Counter Sale (Delta)',
@@ -72,7 +72,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       rejectCases: 'Log Rejected Cases',
     },
     hi: {
-      title: 'किराना स्टोर फील्ड पीओएस और ऑफलाइन कैप्चर',
+      title: 'स्टोर प्रबंधन फील्ड पीओएस और ऑफलाइन कैप्चर',
       subtitle: 'कमजोर नेटवर्क में बिना किसी डेटा नुकसान के बिक्री, स्टॉक और रसीद दर्ज करें',
       incomingDeliveries: 'आने वाली डिलीवरी (रास्ते में)',
       recordSale: 'दैनिक बिक्री दर्ज करें',
@@ -84,7 +84,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       rejectCases: 'अस्वीकार किए गए केस',
     },
     mr: {
-      title: 'किराणा दुकान व्यवस्थापक पीओएस आणि ऑफलाइन नोंद',
+      title: 'स्टोअर व्यवस्थापन पीओएस आणि ऑफलाइन नोंद',
       subtitle: 'कमकुवत नेटवर्कवर डेटा न गमावता विक्री, शिल्लक स्टॉक आणि डिलिव्हरी नोंदवा',
       incomingDeliveries: 'येणारी डिलिव्हरी (मार्गावर)',
       recordSale: 'दैनिक विक्री नोंदवा',
@@ -158,7 +158,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
               {t.title}
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA]">
-              J4 &amp; J5 Ganesh (Kirana)
+              J4 &amp; J5 Ganesh (Store Management)
             </span>
           </div>
           <p className="text-xs text-[#64748B] mt-1">
@@ -206,7 +206,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
           )}
           <div className="text-xs">
             <p className="font-bold">
-              {isOnline ? 'Online: Direct Live Sync to FastAPI Backend' : 'Offline Mode: Kirana Connectivity Lost'}
+              {isOnline ? 'Online: Direct Live Sync to FastAPI Backend' : 'Offline Mode: Store Connectivity Lost'}
             </p>
             <p className="text-[#64748B] text-[11px] mt-0.5">
               {isOnline
@@ -290,7 +290,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
             <h3 className="text-base font-bold text-[#1E293B]">{t.recordSale}</h3>
           </div>
           <p className="text-xs text-[#64748B]">
-            Records incremental kirana counter sales. Deduplicated with idempotent eventId (FR-04).
+            Records incremental store counter sales. Deduplicated with idempotent eventId (FR-04).
           </p>
 
           <form onSubmit={handleSaleSubmit} className="space-y-3">
@@ -396,7 +396,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
             <span>{t.queueStatus}</span>
           </h4>
           <span className="text-xs text-[#64748B]">
-            {queuedEvents.length} events logged on this kirana device
+            {queuedEvents.length} events logged on this store device
           </span>
         </div>
 
@@ -484,7 +484,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
                   >
                     <option value="short_shelf_life">Short Shelf Life (&lt; 70% min)</option>
                     <option value="damaged">Goods Damaged in Transit</option>
-                    <option value="no_space">No Space in Kirana Storeroom</option>
+                    <option value="no_space">No Space in Store Storeroom</option>
                     <option value="wrong_sku">Wrong SKU Delivered</option>
                   </select>
                 </div>
@@ -511,4 +511,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
     </div>
   );
 };
+
+export const StoreManagementView = KiranaRetailerView;
+export type StoreManagementViewProps = KiranaRetailerViewProps;
 

@@ -162,7 +162,7 @@ export const ReasonCardModal: React.FC<ReasonCardModalProps> = ({ card, onClose,
             </div>
 
             <p className="text-[11px] text-[#64748B]">
-              Batch retains {card.shelfLifeDaysRemaining} days remaining upon arrival. Delivery meets the retailer's 70% minimum freshness requirement and will not trigger kirana rejection waste.
+              Batch retains {card.shelfLifeDaysRemaining} days remaining upon arrival. Delivery meets the retailer's 70% minimum freshness requirement and will not trigger store rejection waste.
             </p>
           </div>
 

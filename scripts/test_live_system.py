@@ -48,7 +48,7 @@ m_count = com_res["committed_movements_count"]
 inv_ver = com_res["inventory_version"]
 print(f"[Workflow 3] Committed Plan {plan_code} - HTTP {status}, Committed Movements: {m_count}, Inventory Version: {inv_ver}")
 
-# 4. Kirana Retailer Sale (Ganesh - Operator)
+# 4. Store Management Retailer Sale (Ganesh - Operator)
 operator_headers = {"X-User-Role": "OPERATOR", "X-User-Email": "ganesh@flowgrid.internal"}
 status, sale_res = post(f"{base}/sales", {
     "store_id": 1,
@@ -58,7 +58,7 @@ status, sale_res = post(f"{base}/sales", {
     "is_stockout_day": False
 }, operator_headers)
 sample = sale_res.get("sample_records", [{}])[0]
-print(f"[Workflow 4] Kirana Retailer Sale - HTTP {status}, Recorded: {sale_res.get('recorded_count', 1)} record for SKU {sample.get('sku')}")
+print(f"[Workflow 4] Store Management Retailer Sale - HTTP {status}, Recorded: {sale_res.get('recorded_count', 1)} record for SKU {sample.get('sku')}")
 
 # 5. Warehouse Physical Batch Adjustment (Sunita - Approver / WH Mgr)
 status, adj_res = post(f"{base}/inventory/batches/1/adjust", {

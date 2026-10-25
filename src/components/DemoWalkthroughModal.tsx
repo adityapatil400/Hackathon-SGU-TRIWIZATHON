@@ -77,10 +77,10 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({
     },
     {
       step: 5,
-      title: 'Offline Kirana POS Capture & Conflict Resolution (FR-05, FR-06, J5)',
+      title: 'Offline Store Management POS Capture & Conflict Resolution (FR-05, FR-06, J5)',
       desc: 'Toggle offline mode to simulate weak village network. Record sales and receipts into the offline queue with unique UUIDs. Reconnect and watch them sync with zero duplicates or data loss.',
       tab: 'retailer' as ActiveTab,
-      actionLabel: 'Test Offline Kirana POS',
+      actionLabel: 'Test Offline Store Management POS',
       action: () => {
         onNavigateTab('retailer');
         onToggleOffline();

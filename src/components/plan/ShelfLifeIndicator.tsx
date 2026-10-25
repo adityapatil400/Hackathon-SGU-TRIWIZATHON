@@ -70,7 +70,7 @@ export const ShelfLifeIndicator: React.FC<ShelfLifeIndicatorProps> = ({
       onBlur={() => setShowTooltip(false)}
       tabIndex={0}
       role="tooltip"
-      aria-label={`Arrival shelf-life: ${normalized}%. Status: ${config.label}. Kirana minimum threshold is ${minThresholdPct}%.`}
+      aria-label={`Arrival shelf-life: ${normalized}%. Status: ${config.label}. Store minimum threshold is ${minThresholdPct}%.`}
     >
       {/* Badge */}
       <div
@@ -95,7 +95,7 @@ export const ShelfLifeIndicator: React.FC<ShelfLifeIndicatorProps> = ({
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-[#64748B] z-10"
           style={{ left: `${minThresholdPct}%` }}
-          title={`Kirana SLA minimum limit (${minThresholdPct}%)`}
+          title={`Store SLA minimum limit (${minThresholdPct}%)`}
         />
       </div>
 
@@ -123,7 +123,7 @@ export const ShelfLifeIndicator: React.FC<ShelfLifeIndicatorProps> = ({
               <span className="font-bold text-[#1E293B] font-mono">{normalized}%</span>
             </div>
             <div className="flex justify-between text-[#64748B]">
-              <span>Kirana Rule:</span>
+              <span>Store Rule:</span>
               <span className="font-semibold text-[#15803D]">&ge; {minThresholdPct}% Minimum</span>
             </div>
             {daysRemaining !== undefined && (

@@ -219,7 +219,7 @@ export const SmartDispatchView: React.FC<SmartDispatchViewProps> = ({
             </p>
 
             <p className={`text-xs sm:text-sm max-w-3xl leading-relaxed ${isDay ? 'text-slate-600' : 'text-slate-300'}`}>
-              Overcoming the kirana delivery bottleneck across Maharashtra. Narrow wada lanes (≤2.5m) trap standard commercial trucks.
+              Overcoming the store management delivery bottleneck across Maharashtra. Narrow wada lanes (≤2.5m) trap standard commercial trucks.
               Our engine parses client addresses, classifies accessibility tiers, and assigns local native drivers who speak regional dialects,
               know landmark-based shortcuts, and carry verified street clearance.
             </p>
@@ -406,7 +406,7 @@ export const SmartDispatchView: React.FC<SmartDispatchViewProps> = ({
               { id: 'NARROW', label: 'Narrow Peth Alleys (<2.5m)' },
               { id: 'GHAT', label: 'Ghat Mountain Routes' },
               { id: 'APMC', label: 'APMC Wholesale Mandi' },
-              { id: 'PERI_URBAN', label: 'Peri-Urban Kirana' },
+              { id: 'PERI_URBAN', label: 'Peri-Urban Store' },
               { id: 'HIGHWAY', label: 'Highway Dock' }
             ].map((f) => (
               <button
@@ -790,7 +790,7 @@ export const SmartDispatchView: React.FC<SmartDispatchViewProps> = ({
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                   When a native driver finishes an inter-district drop (e.g. Pune &rarr; Satara or Kolhapur &rarr; Karad),
                   the engine scans all pending client orders in their return corridor. Instead of returning empty (deadhead miles),
-                  the driver is paired with unassigned kirana orders in their native home territory, cutting distributor freight costs by 38%
+                  the driver is paired with unassigned store orders in their native home territory, cutting distributor freight costs by 38%
                   and ensuring same-day replenishment.
                 </p>
               </div>

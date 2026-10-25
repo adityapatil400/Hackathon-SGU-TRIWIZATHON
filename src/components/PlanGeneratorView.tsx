@@ -321,7 +321,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
             )}
           </div>
           <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-            Greedy Marginal-Value Allocation • Value-Tier Objective • Hard Constraints: Zero Negative Stock, Shelf-Life on Arrival &ge; 70%, Kirana Storage Limits
+            Greedy Marginal-Value Allocation • Value-Tier Objective • Hard Constraints: Zero Negative Stock, Shelf-Life on Arrival &ge; 70%, Store Storage Limits
           </p>
         </div>
 
@@ -608,9 +608,9 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                       type="button"
                       onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'retailer_asc' ? 'default' : 'retailer_asc' })}
                       className="inline-flex items-center gap-1.5 hover:text-[#1E293B] cursor-pointer transition-colors"
-                      title="Sort by Kirana Retailer"
+                      title="Sort by Store Management"
                     >
-                      <span>{t('kiranaRetailer') || 'Kirana Retailer'}</span>
+                      <span>{t('table.destination') || 'Store Management'}</span>
                       <ArrowUpDown className={`w-3 h-3 ${filters.sortBy === 'retailer_asc' ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
                     </button>
                   </th>

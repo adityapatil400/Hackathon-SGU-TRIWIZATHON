@@ -571,7 +571,7 @@ class ProductChatIntelligenceService:
                     "expiry_date": b["expiry_date"],
                     "qty_units": b["qty_units"],
                     "remaining_shelf_life_pct": round(b.get("shelf_life_pct", 0.0) * 100, 1),
-                    "risk_reason": "Remaining shelf life is below Kirana intake threshold (70%)",
+                    "risk_reason": "Remaining shelf life is below Store Management intake threshold (70%)",
                 }
                 at_risk_batches.append(item)
                 sources.append(
@@ -761,7 +761,7 @@ class ProductChatIntelligenceService:
             "assigned_warehouse": FMCG_WAREHOUSES.get(sourcing_wh, {}).get("name", sourcing_wh),
             "freight_cost_per_case": freight_cost,
             "fefo_rule_applied": "Strict FEFO guard validated against retailer minimum shelf-life threshold (70%)",
-            "optimization_objective": "Minimized total landed distribution cost while maintaining 100% kirana intake shelf-life compliance",
+            "optimization_objective": "Minimized total landed distribution cost while maintaining 100% store intake shelf-life compliance",
         }
 
         sources = [
@@ -981,7 +981,7 @@ class ProductChatIntelligenceService:
                 f"**{prod_name}** (`{sku}`) was allocated from **{wh_name}** to **{ret_name}** for two verified reasons:\n"
                 f"1. **Logistics Cost Optimization:** {wh_name} offers the lowest verified freight rate to this destination at **₹{cost}/case**.\n"
                 f"2. **Shelf Life & FEFO Invariant:** The dispatched batch satisfies the retailer's strict 70% remaining shelf-life threshold, preventing stock returns and damage claims.\n"
-                f"3. **Kirana Backroom Constraint:** Dispatched batch quantities respect the store's physical storage limit."
+                f"3. **Store Management Backroom Constraint:** Dispatched batch quantities respect the store's physical storage limit."
             )
 
         elif intent == "freight_cost":
@@ -1006,7 +1006,7 @@ class ProductChatIntelligenceService:
             return (
                 f"**Top FMCG Demand Forecasts (Current Planning Cycle):**\n\n"
                 + "\n".join(lines)
-                + "\n\nAll forecasts incorporate historical consumption, seasonal Kirana patterns, and festival surge modeling."
+                + "\n\nAll forecasts incorporate historical consumption, seasonal store patterns, and festival surge modeling."
             )
 
         else:

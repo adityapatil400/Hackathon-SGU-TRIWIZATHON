@@ -17,17 +17,18 @@ import {
 } from 'recharts';
 import { DemandForecast, Product, Retailer } from '../types';
 import { useTranslation } from '../context/TranslationContext';
+import { INITIAL_PRODUCTS, INITIAL_RETAILERS } from '../data/mockData';
 
 interface ForecastReviewViewProps {
-  forecasts: DemandForecast[];
-  products: Product[];
-  retailers: Retailer[];
+  forecasts?: DemandForecast[];
+  products?: Product[];
+  retailers?: Retailer[];
 }
 
 export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
-  forecasts,
-  products,
-  retailers,
+  forecasts = [],
+  products = [],
+  retailers = [],
 }) => {
   const { t, formatNumber } = useTranslation();
   const [selectedRetailer, setSelectedRetailer] = useState<string>('RET-GAN');
@@ -35,29 +36,78 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
   const [filterMethod, setFilterMethod] = useState<string>('all');
   const [showStockoutCorrectedOnly, setShowStockoutCorrectedOnly] = useState<boolean>(false);
 
-  const activeForecast = forecasts.find(
-    f => f.retailerId === selectedRetailer && f.sku === selectedSku
-  ) || forecasts[0];
+  // Resilient lookup helpers: check passed props first, fall back to initial catalog
+  const getRetailer = (retailerId: string): Retailer | undefined => {
+    return retailers.find(r => r.id === retailerId) || INITIAL_RETAILERS.find(r => r.id === retailerId);
+  };
 
-  const activeProduct = products.find(p => p.sku === (activeForecast?.sku || selectedSku));
-  const activeRetailer = retailers.find(r => r.id === (activeForecast?.retailerId || selectedRetailer));
-
-  // Generate simulated 7-day quantile spread daily fan
-  const dailyQuantileData = [
-    { day: 'Mon', p10: Math.round(activeForecast.q10 / 7 * 0.9), p50: Math.round(activeForecast.q50 / 7 * 0.95), p95: Math.round(activeForecast.q95 / 7 * 1.05) },
-    { day: 'Tue', p10: Math.round(activeForecast.q10 / 7 * 0.95), p50: Math.round(activeForecast.q50 / 7 * 0.98), p95: Math.round(activeForecast.q95 / 7 * 1.02) },
-    { day: 'Wed', p10: Math.round(activeForecast.q10 / 7 * 1.0), p50: Math.round(activeForecast.q50 / 7 * 1.0), p95: Math.round(activeForecast.q95 / 7 * 1.0) },
-    { day: 'Thu', p10: Math.round(activeForecast.q10 / 7 * 1.02), p50: Math.round(activeForecast.q50 / 7 * 1.02), p95: Math.round(activeForecast.q95 / 7 * 1.04) },
-    { day: 'Fri', p10: Math.round(activeForecast.q10 / 7 * 1.1), p50: Math.round(activeForecast.q50 / 7 * 1.15), p95: Math.round(activeForecast.q95 / 7 * 1.18) },
-    { day: 'Sat', p10: Math.round(activeForecast.q10 / 7 * 1.3), p50: Math.round(activeForecast.q50 / 7 * 1.4), p95: Math.round(activeForecast.q95 / 7 * 1.45) },
-    { day: 'Sun', p10: Math.round(activeForecast.q10 / 7 * 1.25), p50: Math.round(activeForecast.q50 / 7 * 1.35), p95: Math.round(activeForecast.q95 / 7 * 1.38) },
-  ];
+  const getProduct = (sku: string): Product | undefined => {
+    return products.find(p => p.sku === sku) || INITIAL_PRODUCTS.find(p => p.sku === sku);
+  };
 
   const filteredForecasts = forecasts.filter(f => {
     if (filterMethod !== 'all' && f.method !== filterMethod) return false;
     if (showStockoutCorrectedOnly && !f.stockoutCorrected) return false;
     return true;
   });
+
+  const activeForecast = (
+    filteredForecasts.find(f => f.retailerId === selectedRetailer && f.sku === selectedSku) ||
+    filteredForecasts[0] ||
+    forecasts.find(f => f.retailerId === selectedRetailer && f.sku === selectedSku) ||
+    forecasts[0] ||
+    null
+  );
+
+  const activeProduct = activeForecast ? getProduct(activeForecast.sku) : undefined;
+  const activeRetailer = activeForecast ? getRetailer(activeForecast.retailerId) : undefined;
+
+  // Generate simulated 7-day quantile spread daily fan safely
+  const dailyQuantileData = activeForecast
+    ? [
+        { day: 'Mon', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 0.9), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 0.95), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.05) },
+        { day: 'Tue', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 0.95), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 0.98), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.02) },
+        { day: 'Wed', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 1.0), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 1.0), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.0) },
+        { day: 'Thu', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 1.02), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 1.02), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.04) },
+        { day: 'Fri', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 1.1), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 1.15), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.18) },
+        { day: 'Sat', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 1.3), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 1.4), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.45) },
+        { day: 'Sun', p10: Math.round((activeForecast.q10 ?? 0) / 7 * 1.25), p50: Math.round((activeForecast.q50 ?? 0) / 7 * 1.35), p95: Math.round((activeForecast.q95 ?? 0) / 7 * 1.38) },
+      ]
+    : [];
+
+  if (!forecasts || forecasts.length === 0) {
+    return (
+      <div className="space-y-6 text-[#1E293B]">
+        <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-[#1E293B] tracking-tight">
+                {t('forecast.title', 'AI Demand Intelligence & Quantile Forecasts')}
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+                FR-08 Quantile ML
+              </span>
+            </div>
+            <p className="text-xs text-[#64748B] mt-1">
+              {t('forecast.subtitle', '7-day replenishment cycle quantiles (p10 to p95) • Scikit-learn HistGradientBoosting vs 4-week Moving Average Baseline • Stockout Day Correction (RC2)')}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-12 rounded-2xl border border-[#E7E5E4] text-center shadow-xs">
+          <div className="max-w-md mx-auto space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#EFF6FF] flex items-center justify-center text-[#2563EB]">
+              <TrendingUp className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-[#1E293B]">No Demand Forecast Records Available</h3>
+            <p className="text-xs text-[#64748B]">
+              Demand forecast series are being computed or have not been loaded. Please verify data pipeline connectivity or re-run the planning engine.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-[#1E293B]">
@@ -104,8 +154,11 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-base font-bold text-[#1E293B] flex items-center gap-2">
-                  <span>{activeProduct?.name}</span>
-                  <span className="text-xs font-normal text-[#64748B]">@ {activeRetailer?.name}</span>
+                  <span>{activeProduct?.name || activeForecast.sku}</span>
+                  <span className="text-xs font-normal text-[#64748B]">
+                    @ {activeRetailer?.name || activeForecast.retailerId}
+                    {activeRetailer?.city ? ` (${activeRetailer.city})` : ''}
+                  </span>
                 </h3>
                 <p className="text-xs text-[#64748B] mt-0.5">
                   Quantile Fan Spread (10th percentile floor to 95th percentile peak)
@@ -185,7 +238,7 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
                       ? 'Gradient boosting quantile loss with lag-7, 14, 28 features + festival proximity. Switched to because it beat 4-week MA.'
                       : activeForecast.method === 'Bootstrap'
                       ? 'Intermittent demand (interval ≥ 1.32 days): 1,000 resampled uncensored 7-day totals.'
-                      : 'Peer transfer model: scaled from peer kiranas due to short history (<56 days).'}
+                      : 'Peer transfer model: scaled from peer stores due to short history (<56 days).'}
                   </p>
                 </div>
 
@@ -197,7 +250,7 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
                     </span>
                   </div>
                   <p className="text-[11px] text-[#64748B] mt-1 leading-relaxed">
-                    Days where closing stock reached 0 were corrected to 4-week weekday median, preventing the kirana death spiral where zero stock creates zero forecast.
+                    Days where closing stock reached 0 were corrected to 4-week weekday median, preventing the store death spiral where zero stock creates zero forecast.
                   </p>
                 </div>
 
@@ -227,7 +280,7 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E7E5E4] shadow-xs">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-[#64748B]" />
-            <span className="text-xs font-semibold text-[#1E293B]">Filter Series (SKU × Kirana):</span>
+            <span className="text-xs font-semibold text-[#1E293B]">Filter Series (SKU × Store Management):</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -261,7 +314,7 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-[#E7E5E4] bg-[#FAF3E0] text-[#64748B] font-semibold uppercase tracking-wider">
-                  <th className="py-3 px-4">Kirana Retailer</th>
+                  <th className="py-3 px-4">Store Management</th>
                   <th className="py-3 px-4">FMCG SKU</th>
                   <th className="py-3 px-4 text-center">10th %ile</th>
                   <th className="py-3 px-4 text-center">Median (q50)</th>
@@ -275,13 +328,13 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
                 {filteredForecasts.map((f, idx) => {
-                  const ret = retailers.find(r => r.id === f.retailerId);
-                  const prod = products.find(p => p.sku === f.sku);
-                  const isSelected = selectedRetailer === f.retailerId && selectedSku === f.sku;
+                  const ret = getRetailer(f.retailerId);
+                  const prod = getProduct(f.sku);
+                  const isSelected = activeForecast?.retailerId === f.retailerId && activeForecast?.sku === f.sku;
 
                   return (
                     <tr
-                      key={idx}
+                      key={`${f.retailerId}-${f.sku}-${idx}`}
                       className={`hover:bg-[#FFF8E7]/50 cursor-pointer transition-colors ${
                         isSelected ? 'bg-[#EFF6FF]/60' : ''
                       }`}
@@ -291,20 +344,34 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
                       }}
                     >
                       <td className="py-3 px-4 font-semibold text-[#1E293B]">
-                        {ret?.name}
-                        <span className="block text-[10px] text-[#64748B]">{ret?.city}</span>
+                        {ret?.name || f.retailerId}
+                        <span className="block text-[10px] text-[#64748B]">
+                          {ret?.city || (f.retailerId ? `ID: ${f.retailerId}` : '—')}
+                        </span>
                       </td>
 
                       <td className="py-3 px-4 font-bold text-[#1E293B]">
-                        {prod?.name}
-                        <span className="block text-[10px] text-[#64748B] font-mono whitespace-nowrap select-all">{prod?.sku}</span>
+                        {prod?.name || f.sku}
+                        <span className="block text-[10px] text-[#64748B] font-mono whitespace-nowrap select-all">
+                          {prod?.sku || f.sku}
+                        </span>
                       </td>
 
-                      <td className="py-3 px-4 text-center text-[#64748B] font-mono">{formatNumber(f.q10)}</td>
-                      <td className="py-3 px-4 text-center font-black text-sm text-[#15803D] font-mono">{formatNumber(f.q50)}</td>
-                      <td className="py-3 px-4 text-center text-[#1E293B] font-mono">{formatNumber(f.q80)}</td>
-                      <td className="py-3 px-4 text-center text-[#1E293B] font-mono">{formatNumber(f.q90)}</td>
-                      <td className="py-3 px-4 text-center font-bold text-[#2563EB] font-mono">{formatNumber(f.q95)}</td>
+                      <td className="py-3 px-4 text-center text-[#64748B] font-mono">
+                        {typeof f.q10 === 'number' ? formatNumber(f.q10) : '0'}
+                      </td>
+                      <td className="py-3 px-4 text-center font-black text-sm text-[#15803D] font-mono">
+                        {typeof f.q50 === 'number' ? formatNumber(f.q50) : '0'}
+                      </td>
+                      <td className="py-3 px-4 text-center text-[#1E293B] font-mono">
+                        {typeof f.q80 === 'number' ? formatNumber(f.q80) : '0'}
+                      </td>
+                      <td className="py-3 px-4 text-center text-[#1E293B] font-mono">
+                        {typeof f.q90 === 'number' ? formatNumber(f.q90) : '0'}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-[#2563EB] font-mono">
+                        {typeof f.q95 === 'number' ? formatNumber(f.q95) : '0'}
+                      </td>
 
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FFF8E7] text-[#1E293B] border border-[#E7E5E4]">
@@ -319,7 +386,7 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
                               CORRECTED
                             </span>
                           )}
-                          {f.flags.map((flag, fIdx) => (
+                          {(f.flags || []).map((flag, fIdx) => (
                             <span key={fIdx} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-[#FFF8E7] text-[#64748B] border border-[#E7E5E4]">
                               {flag}
                             </span>
@@ -329,9 +396,12 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
 
                       <td className="py-3 px-4 text-right whitespace-nowrap">
                         <button
-                          onClick={() => {
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedRetailer(f.retailerId);
                             setSelectedSku(f.sku);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
                           }}
                           className={`text-xs px-2.5 py-1 rounded font-semibold transition-colors cursor-pointer ${
                             isSelected
@@ -345,6 +415,29 @@ export const ForecastReviewView: React.FC<ForecastReviewViewProps> = ({
                     </tr>
                   );
                 })}
+
+                {filteredForecasts.length === 0 && (
+                  <tr>
+                    <td colSpan={10} className="py-12 px-4 text-center">
+                      <div className="max-w-sm mx-auto space-y-2">
+                        <p className="text-sm font-semibold text-[#1E293B]">No Forecast Series Found</p>
+                        <p className="text-xs text-[#64748B]">
+                          No demand forecast records match the currently selected filter criteria.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFilterMethod('all');
+                            setShowStockoutCorrectedOnly(false);
+                          }}
+                          className="mt-3 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#EFF6FF] text-[#2563EB] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          Reset Filters
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

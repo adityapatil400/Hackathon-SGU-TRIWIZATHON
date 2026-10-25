@@ -15,7 +15,8 @@ const RETAILER_COORDS: Record<string, { lat: number; lng: number }> = {
 };
 
 const CATEGORY_LABELS: Record<RetailerType, string> = {
-  kirana: "Kirana",
+  kirana: "Store Management",
+  store_management: "Store Management",
   modern_trade: "Modern Trade",
   distributor: "Distributor",
 };

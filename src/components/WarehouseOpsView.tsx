@@ -147,7 +147,7 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-[#E7E5E4] bg-[#FAF3E0] text-[#64748B] font-semibold uppercase">
-                    <th className="py-2.5 px-3">Destination Kirana</th>
+                    <th className="py-2.5 px-3">Destination Store</th>
                     <th className="py-2.5 px-3">Product SKU</th>
                     <th className="py-2.5 px-3">Batch to Pick</th>
                     <th className="py-2.5 px-3 text-center">Cases (Units)</th>
@@ -164,7 +164,7 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
                       <tr key={line.id} className="hover:bg-[#FFF8E7]/50 transition-colors">
                         <td className="py-3 px-3 font-semibold text-[#1E293B]">
                           {ret?.name} ({ret?.city})
-                          <span className="block text-[10px] text-[#64748B]">Class {ret?.serviceClass} Kirana</span>
+                          <span className="block text-[10px] text-[#64748B]">Class {ret?.serviceClass} Store</span>
                         </td>
 
                         <td className="py-3 px-3 font-bold text-[#1E293B]">
