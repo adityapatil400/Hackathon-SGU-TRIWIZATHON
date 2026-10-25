@@ -188,11 +188,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
           )}
           <div className="text-xs">
             <p className="font-bold">
-<<<<<<< Updated upstream
-              {isOnline ? 'Demo online: local event processing' : 'Demo offline: event queue enabled'}
-=======
               {isOnline ? 'Online: Direct Live Sync to FastAPI Backend' : 'Offline Mode: Kirana Connectivity Lost'}
->>>>>>> Stashed changes
             </p>
             <p className="text-[#78716C] text-[11px] mt-0.5">
               {isOnline

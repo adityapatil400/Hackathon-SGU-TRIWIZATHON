@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-<<<<<<< Updated upstream
 @font-face {
   font-family: 'Parmyo';
   src: url('/fonts/Parmyo.otf') format('opentype'),
@@ -14,15 +13,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-=======
->>>>>>> Stashed changes
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-<<<<<<< Updated upstream
     --font-parmyo: 'Parmyo', var(--font-sans);
-=======
 
     /* FlowGrid Theme Color Palette */
     --color-main-bg: #FFFFFF;
@@ -62,7 +57,6 @@
     --input: #E7E5E4;
     --ring: #8B5E3C;
     --radius: 0.75rem;
->>>>>>> Stashed changes
   }
 
   body {
@@ -109,26 +103,16 @@
   background: #A8A29E;
 }
 
-<<<<<<< Updated upstream
 .font-parmyo {
   font-family: 'Parmyo', var(--font-sans);
   letter-spacing: 0.02em;
 }
 
-/* Glassmorphism utilities */
-.glass-panel {
-
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-=======
 /* FlowGrid Cards & Panels */
 .glass-panel {
   background: #FFFFFF;
   border: 1px solid #E7E5E4;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
->>>>>>> Stashed changes
 }
 
 .glass-panel-hover {
@@ -246,7 +230,6 @@
 
 .animate-pulse-subtle {
   animation: pulse-subtle 2s infinite ease-in-out;
-<<<<<<< Updated upstream
 }
 
 /* ==========================================================================
@@ -455,6 +438,4 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-=======
->>>>>>> Stashed changes
 }

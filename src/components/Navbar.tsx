@@ -217,25 +217,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           {queuedEventCount > 0 ? (
             <button
               onClick={onTriggerSync}
-<<<<<<< Updated upstream
-              className="flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 px-2 py-1 rounded-lg border border-amber-500/30 transition-all"
-              title="Process queued events in the local demo queue"
-=======
               className="flex items-center gap-1 text-[11px] font-bold text-[#DC2626] bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg border border-red-200 transition-all cursor-pointer"
               title="Click to force sync offline queue"
->>>>>>> Stashed changes
             >
               <span>{queuedEventCount} queued</span>
               <span className="underline ml-0.5">Process</span>
             </button>
           ) : (
-<<<<<<< Updated upstream
-            <span className="text-[10px] text-slate-500 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> Queue empty
-=======
             <span className="text-[10px] text-[#78716C] flex items-center gap-1 font-medium">
               <CheckCircle2 className="w-3 h-3 text-[#15803D]" /> Synced
->>>>>>> Stashed changes
             </span>
           )}
         </div>
@@ -284,27 +274,26 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Bottom Utility & Demo Buttons */}
-<<<<<<< Updated upstream
-      <div className="space-y-2 pt-4 border-t border-slate-800/80">
+      <div className="space-y-2 pt-3 border-t border-[#E7E5E4]">
         {onToggleTheme && (
           <button
             type="button"
             onClick={onToggleTheme}
-            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer select-none ${
-              theme === 'day'
-                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                : 'bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700'
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
+              theme === 'night'
+                ? 'bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700'
+                : 'bg-[#E9D8C8] text-[#8B5E3C] border border-[#8B5E3C]/30 hover:bg-[#8B5E3C] hover:text-white'
             }`}
           >
-            {theme === 'day' ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                <span>Theme: Day (Cream Navy)</span>
-              </>
-            ) : (
+            {theme === 'night' ? (
               <>
                 <Moon className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
                 <span>Theme: Night (Cosmic)</span>
+              </>
+            ) : (
+              <>
+                <Sun className="w-3.5 h-3.5 text-[#8B5E3C]" />
+                <span>Theme: Day (Enterprise)</span>
               </>
             )}
           </button>
@@ -312,13 +301,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <button
           onClick={onOpenDemoModal}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 transition-all shadow-sm cursor-pointer"
-=======
-      <div className="space-y-2 pt-3 border-t border-[#E7E5E4]">
-        <button
-          onClick={onOpenDemoModal}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition-all shadow-xs cursor-pointer"
->>>>>>> Stashed changes
         >
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>3-Min Demo Script</span>
@@ -326,11 +309,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <button
           onClick={onOpenWhatIfModal}
-<<<<<<< Updated upstream
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all shadow-sm cursor-pointer"
-=======
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#292524] bg-white hover:bg-[#E9D8C8]/50 border border-[#8B5E3C] transition-all shadow-xs cursor-pointer"
->>>>>>> Stashed changes
         >
           <Sliders className="w-3.5 h-3.5 text-[#8B5E3C]" />
           <span>What-If Simulator</span>
@@ -373,13 +352,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Online status indicator */}
           <button
             onClick={() => setIsOnline(!isOnline)}
-<<<<<<< Updated upstream
             aria-label={isOnline ? 'Demo network mode is online' : 'Demo network mode is offline'}
             title="Toggle simulated local event processing"
-            className={`p-1.5 rounded-lg border text-xs ${
-=======
             className={`p-1.5 rounded-lg border text-xs cursor-pointer ${
->>>>>>> Stashed changes
               isOnline
                 ? 'bg-emerald-50 text-[#15803D] border-emerald-200'
                 : 'bg-amber-50 text-[#D97706] border-amber-200'

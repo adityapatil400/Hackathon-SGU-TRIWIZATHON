@@ -504,13 +504,9 @@ export const App: React.FC = () => {
   const currentKirana = retailers.find(r => r.id === 'RET-GAN') || retailers[0];
 
   return (
-<<<<<<< Updated upstream
     <div className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-200 ${
-      theme === 'day' ? 'theme-day bg-[#f8f6f0] text-[#0a192f]' : 'theme-night bg-slate-950 text-slate-100'
+      theme === 'night' ? 'theme-night bg-slate-950 text-slate-100' : 'theme-day bg-[#F8F7F5] text-[#292524]'
     }`}>
-=======
-    <div className="min-h-screen bg-[#F8F7F5] text-[#292524] flex flex-col lg:flex-row">
->>>>>>> Stashed changes
       {/* Left Sidebar Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -530,19 +526,13 @@ export const App: React.FC = () => {
       {/* Main Content Column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden">
         {/* Top Context Sub-Bar (Desktop) */}
-<<<<<<< Updated upstream
         <div className={`hidden lg:flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-6 py-2.5 border-b text-xs transition-colors duration-200 ${
-          theme === 'day'
-            ? 'bg-white/95 border-slate-200/90 text-slate-700 shadow-sm'
-            : 'bg-slate-900/40 border-slate-800/80 text-slate-400'
+          theme === 'night'
+            ? 'bg-slate-900/40 border-slate-800/80 text-slate-400'
+            : 'bg-white border-[#E7E5E4] text-[#78716C] shadow-xs'
         }`}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className={`font-semibold capitalize ${theme === 'day' ? 'text-[#0a192f]' : 'text-slate-200'}`}>
-=======
-        <div className="hidden lg:flex items-center justify-between px-6 py-2.5 bg-white border-b border-[#E7E5E4] text-xs text-[#78716C] shadow-xs">
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-[#292524] capitalize">
->>>>>>> Stashed changes
+            <span className={`font-bold capitalize ${theme === 'night' ? 'text-slate-200' : 'text-[#292524]'}`}>
               {activeTab === 'plans' ? 'Allocation Plan & AI Engine' :
                activeTab === 'forecast' ? 'Demand Forecasting Intelligence' :
                activeTab === 'map' ? 'Demand Map Intelligence' :
@@ -553,50 +543,42 @@ export const App: React.FC = () => {
                activeTab === 'import' ? 'Master Data Import Studio' :
                'System Health & Monitoring'}
             </span>
-<<<<<<< Updated upstream
-            <span className="text-slate-400">•</span>
-            <span className="text-slate-500">{PLAN_HORIZON_DAYS}-day planning horizon</span>
-            <span className="text-slate-400">•</span>
-            <span className="text-indigo-600 dark:text-indigo-300 font-mono text-[11px]">Maharashtra Logistics Grid</span>
+            <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>{PLAN_HORIZON_DAYS}-day planning horizon • W43</span>
+            <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
+            <span className={`font-mono text-[11px] font-semibold ${theme === 'night' ? 'text-indigo-400' : 'text-[#8B5E3C]'}`}>
+              Maharashtra Logistics Grid (Pune Hub, Satara, Kolhapur)
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>Avg Kirana Margin: <strong className="text-[#15803D]">3–5%</strong></span>
+            <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>
+              Solve Time: <strong className={theme === 'night' ? 'text-indigo-400' : 'text-[#2563EB]'}>{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong>
+            </span>
             {/* Quick Theme Toggle Button */}
             <button
               type="button"
               onClick={handleToggleTheme}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs transition-all cursor-pointer shadow-sm ${
-                theme === 'day'
-                  ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                  : 'bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700'
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs transition-all cursor-pointer shadow-xs ${
+                theme === 'night'
+                  ? 'bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700'
+                  : 'bg-[#E9D8C8] text-[#8B5E3C] border border-[#8B5E3C]/30 hover:bg-[#8B5E3C] hover:text-white'
               }`}
             >
-              {theme === 'day' ? (
+              {theme === 'night' ? (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                  <span>Day Mode (Cream Navy)</span>
+                  <Moon className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                  <span>Night Mode</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
-                  <span>Night Mode (Cosmic)</span>
+                  <Sun className="w-3.5 h-3.5 text-[#8B5E3C]" />
+                  <span>Day Mode</span>
                 </>
               )}
             </button>
-            <span className="text-slate-400">|</span>
-            <span className="text-slate-500">Solve Time: <strong className="text-indigo-600 dark:text-indigo-300">&lt;1ms</strong></span>
-=======
-            <span className="text-[#E7E5E4]">•</span>
-            <span className="text-[#78716C] font-medium">Weekly Cycle W43 (Oct 2026)</span>
-            <span className="text-[#E7E5E4]">•</span>
-            <span className="text-[#8B5E3C] font-mono text-[11px] font-semibold">Network: Maharashtra (Pune Hub, Satara, Kolhapur)</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-[11px]">
-            <span className="text-[#78716C]">Avg Kirana Margin: <strong className="text-[#15803D]">3–5%</strong></span>
-            <span className="text-[#E7E5E4]">•</span>
-            <span className="text-[#78716C]">Solve Time: <strong className="text-[#2563EB]">{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong></span>
->>>>>>> Stashed changes
           </div>
         </div>
 

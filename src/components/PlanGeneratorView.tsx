@@ -17,7 +17,9 @@ import {
   ChevronRight,
   FilterX,
   X,
-  ArrowUpDown
+  ArrowUpDown,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PlanRun, AllocationLine, Product, Warehouse, Retailer, InventoryBatch } from '../types';

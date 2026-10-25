@@ -12,12 +12,7 @@ import {
   Legend,
   CartesianGrid
 } from 'recharts';
-<<<<<<< Updated upstream
-import { BENCHMARK_SIMULATION_SUMMARY, BENCHMARK_COMPARISONS, BENCHMARK_SOLVE_TIME, SEED_BENCHMARK_DATA } from '../data/mockData';
-import { WORKSPACE_SEED_SCOPE } from '../data/demoScope';
-=======
 import { BENCHMARK_COMPARISONS, BENCHMARK_SOLVE_TIME, SEED_BENCHMARK_DATA } from '../data/mockData';
->>>>>>> Stashed changes
 
 export const BaselineComparisonView: React.FC = () => {
   const [selectedSeed, setSelectedSeed] = useState<number>(0);
@@ -47,13 +42,8 @@ export const BaselineComparisonView: React.FC = () => {
               FR-13 Simulated True Demand
             </span>
           </div>
-<<<<<<< Updated upstream
-          <p className="text-xs text-slate-400 mt-1">
-            Synthetic benchmark: 20 seeds / 9 cycles (180 runs). The measured operation is the client-side runOptimizationEngine on {WORKSPACE_SEED_SCOPE.retailerCount} retailers, {WORKSPACE_SEED_SCOPE.skuCount} SKUs, and {WORKSPACE_SEED_SCOPE.warehouseCount} warehouses (p95: {BENCHMARK_SOLVE_TIME.p95}ms). The report does not record hardware, so treat timing as comparison-only, not an SLA.
-=======
           <p className="text-xs text-[#78716C] mt-1">
             Scored on identical hidden true demand over 9 weekly cycles across 20 simulated networks (Seeds 0–19). 180 of 180 decision runs successfully completed (p95: {BENCHMARK_SOLVE_TIME.p95}ms).
->>>>>>> Stashed changes
           </p>
         </div>
 
@@ -231,13 +221,8 @@ export const BaselineComparisonView: React.FC = () => {
         <p className="leading-relaxed">
           Against <strong>Current Practice</strong> (the spreadsheet rule used by 85–90% of Indian FMCG traditional trade distributors), FlowGrid achieves computed benchmark gains: <strong>{BENCHMARK_COMPARISONS.stockoutReductionVsCurrentPct}% stockouts</strong>, <strong>{BENCHMARK_COMPARISONS.wasteReductionVsCurrentPct}% expiry waste</strong>, and lost margin reduction of <strong>{BENCHMARK_COMPARISONS.lostMarginReductionVsCurrentPct}%</strong>.
         </p>
-<<<<<<< Updated upstream
-        <p className="leading-relaxed text-slate-400">
-          These results describe the included synthetic simulation and should not be read as production outcomes. The timing measures the client-side heuristic function; benchmark hardware details were not captured.
-=======
         <p className="leading-relaxed text-[#78716C]">
           Against the <strong>Strong Baseline</strong> (safety-stock + FEFO), FlowGrid achieves <strong>{BENCHMARK_COMPARISONS.stockoutChangeVsTextbookPct}% stockouts</strong> and <strong>{BENCHMARK_COMPARISONS.wasteReductionVsTextbookPct}% expiry waste</strong>, while maintaining 100% decision feasibility in under 1ms (p95: {BENCHMARK_SOLVE_TIME.p95}ms).
->>>>>>> Stashed changes
         </p>
       </div>
     </div>

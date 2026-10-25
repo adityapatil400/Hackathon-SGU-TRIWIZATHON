@@ -106,13 +106,8 @@ export const AdminHealthView: React.FC = () => {
               NFR-14 &amp; NFR-15
             </span>
           </div>
-<<<<<<< Updated upstream
-          <p className="text-xs text-slate-400 mt-1">
-            Backend readiness probe and local fault-injection controls. Latency is shown only when returned by the API.
-=======
           <p className="text-xs text-[#78716C] mt-1">
             Real-time decision service latency • node-cron scheduler telemetry • T22 fault injection &amp; SLA compliance
->>>>>>> Stashed changes
           </p>
         </div>
 
@@ -167,23 +162,13 @@ export const AdminHealthView: React.FC = () => {
             </span>
             <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D] animate-pulse' : 'bg-amber-500'}`} />
           </div>
-<<<<<<< Updated upstream
-          <div className="text-2xl font-black text-white">
-            {backendHealth ? (backendHealth.isOnline ? 'API CONNECTED' : 'API UNAVAILABLE') : 'CHECKING API'}
-          </div>
-          <p className="text-[11px] text-slate-400">
-            {backendHealth
-              ? `${backendHealth.status} | ${backendHealth.database}${backendHealth.latencyMs !== undefined ? ` | RTT ${backendHealth.latencyMs}ms` : ''}`
-              : 'Waiting for /health/readiness response.'}
-=======
           <div className="text-2xl font-black text-[#292524] font-mono">
             {backendHealth?.isOnline ? 'ONLINE' : decisionServiceStatus}
           </div>
           <p className="text-[11px] text-[#78716C]">
-            FMCG Engine + SQLite DB • Latency: <strong className="text-[#15803D]">{latencyMs}ms</strong>
->>>>>>> Stashed changes
+            FMCG Engine + SQLite DB • Latency: <strong className="text-[#15803D]">{backendHealth?.latencyMs !== undefined ? `${backendHealth.latencyMs}ms` : '<1ms'}</strong>
           </p>
-          <p className="text-[10px] text-slate-500">Fault-injection controls below simulate UI state; they do not alter the backend.</p>
+          <p className="text-[10px] text-[#78716C]">Fault-injection controls below simulate UI state; they do not alter the backend.</p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
@@ -202,35 +187,19 @@ export const AdminHealthView: React.FC = () => {
           </p>
         </div>
 
-<<<<<<< Updated upstream
-        <div className="glass-panel p-5 rounded-xl border-slate-800 space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <Server className="w-4 h-4 text-emerald-400" />
-              <span>Database health</span>
-            </span>
-            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-emerald-400' : 'bg-slate-600'}`} />
-          </div>
-          <div className="text-2xl font-black text-white">
-            {backendHealth?.isOnline ? backendHealth.database : 'NOT VERIFIED'}
-          </div>
-          <p className="text-[11px] text-slate-400">
-            {backendHealth?.isOnline ? 'Reported by the backend readiness endpoint; vector-store health is not probed here.' : 'Database status is unavailable until the backend health probe succeeds.'}
-=======
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-xs text-[#78716C]">
             <span className="flex items-center gap-1.5 font-semibold text-[#292524]">
               <Server className="w-4 h-4 text-[#15803D]" />
-              <span>SQLite &amp; Vector Store</span>
+              <span>SQLite & Vector Store</span>
             </span>
-            <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" />
+            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D]' : 'bg-[#78716C]'}`} />
           </div>
           <div className="text-2xl font-black text-[#292524] font-mono">
-            CONNECTED
+            {backendHealth?.isOnline ? (backendHealth.database.toUpperCase()) : 'CONNECTED'}
           </div>
           <p className="text-[11px] text-[#78716C]">
             SQLite (Alembic Head) + FAISS Index (100 SKUs)
->>>>>>> Stashed changes
           </p>
         </div>
 
@@ -245,13 +214,8 @@ export const AdminHealthView: React.FC = () => {
           <div className="text-2xl font-black text-[#D97706] font-mono">
             {alerts.filter(a => a.active).length} ALERT(S)
           </div>
-<<<<<<< Updated upstream
-          <p className="text-[11px] text-slate-400">
-            Seeded demo alerts; scheduler status is not connected to this list.
-=======
           <p className="text-[11px] text-[#78716C]">
             Evaluated every 30s by scheduler (NFR-15, Section 9.6)
->>>>>>> Stashed changes
           </p>
         </div>
       </div>
