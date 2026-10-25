@@ -125,6 +125,7 @@ export const HetvayaAgenticChatbot: React.FC<HetvayaAgenticChatbotProps> = ({
         },
       ],
       suggestedFollowups: [
+        'Audit demand forecast decision for Aashirvaad Atta at Ganesh Kirana',
         'What are the current fuel prices and freight surcharges in Maharashtra?',
         'Which products are at risk of expiry (FEFO)?',
         'What is the available inventory for Aashirvaad Atta?',
@@ -153,6 +154,22 @@ export const HetvayaAgenticChatbot: React.FC<HetvayaAgenticChatbotProps> = ({
       .catch(() => {});
     return () => {
       isMounted = false;
+    };
+  }, []);
+
+  // External listener for opening and pre-filling queries from ForecastReviewView
+  useEffect(() => {
+    const handleOpenChatbot = (e: any) => {
+      setIsOpen(true);
+      if (e.detail?.query) {
+        setTimeout(() => {
+          handleSend(e.detail.query);
+        }, 200);
+      }
+    };
+    window.addEventListener('open-chatbot', handleOpenChatbot);
+    return () => {
+      window.removeEventListener('open-chatbot', handleOpenChatbot);
     };
   }, []);
 

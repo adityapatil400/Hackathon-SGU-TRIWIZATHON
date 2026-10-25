@@ -125,5 +125,68 @@ class RoadRiskAssessmentResponse(BaseModel):
     explanation: str
 
 
+class ForecastDecisionRequest(BaseModel):
+    store_code: str = Field(..., description="Store / Kirana identifier (e.g. RET-GAN)")
+    store_name: Optional[str] = Field(default=None, description="Store commercial name")
+    store_city: Optional[str] = Field(default="Kolhapur", description="Store geographical city/region")
+    store_tier: Optional[int] = Field(default=1, ge=1, le=5, description="Priority tier (1=highest, 5=lowest)")
+    sku: str = Field(..., description="FMCG SKU code (e.g. SKU-ATT-05)")
+    product_name: Optional[str] = Field(default=None, description="Product commercial name")
+    category: Optional[str] = Field(default="Staples & Grains", description="Product category")
+    unit_cost: Optional[float] = Field(default=195.0, ge=0.0)
+    unit_price: Optional[float] = Field(default=240.0, ge=0.0)
+    case_size: Optional[int] = Field(default=12, ge=1, description="Units per shipping case")
+    shelf_life_days: Optional[int] = Field(default=180, ge=1)
+    is_perishable: Optional[bool] = Field(default=False)
+    q10: float = Field(..., ge=0.0, description="10th percentile demand floor")
+    q50: float = Field(..., ge=0.0, description="50th percentile median demand")
+    q80: Optional[float] = Field(default=None, ge=0.0)
+    q90: float = Field(..., ge=0.0, description="90th percentile high demand")
+    q95: Optional[float] = Field(default=None, ge=0.0, description="95th percentile surge demand")
+    baseline_moving_avg: Optional[float] = Field(default=None, ge=0.0)
+    method: Optional[str] = Field(default="HistGradientBoosting", description="ML technique used")
+    stockout_corrected: Optional[bool] = Field(default=False, description="Whether stockout day was corrected (RC2)")
+    wape: Optional[float] = Field(default=0.142, description="Series WAPE error")
+    bias: Optional[float] = Field(default=0.0, description="Forecast bias")
+    last_week_actual: Optional[float] = Field(default=None, description="Actual demand from prior cycle")
+    current_stock: Optional[int] = Field(default=0, ge=0, description="Store on-hand stock")
+    regional_context: Optional[str] = Field(default=None, description="Optional festival, weather, or transit notes")
+    model: Optional[str] = Field(default=None, description="LLM override (e.g. nemotron-3-ultra:cloud)")
+
+
+class ForecastDecisionResponse(BaseModel):
+    decision_id: str
+    store_code: str
+    sku: str
+    model_used: str
+    verdict: str  # "APPROVE_REPLENISHMENT", "BUFFER_AUGMENTED", "CONSERVATIVE_CAP", "STOCKOUT_DEFENSE", "AUDIT_FLAGGED"
+    recommended_units: int
+    recommended_cases: int
+    recommended_safety_buffer_pct: float
+    stockout_risk_level: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    waste_spoilage_risk_level: str  # "LOW", "MEDIUM", "HIGH"
+    confidence_score: float
+    natural_language_explanation: str
+    quantile_spread_analysis: str
+    stockout_correction_impact: str
+    key_decision_factors: List[str]
+    traceable_facts: Dict[str, Any]
+    is_fallback: bool = False
+    execution_time_seconds: float
+
+
+class BatchForecastDecisionRequest(BaseModel):
+    items: List[ForecastDecisionRequest] = Field(..., min_length=1, max_length=50)
+    model: Optional[str] = None
+
+
+class BatchForecastDecisionResponse(BaseModel):
+    total_evaluated: int
+    model_used: str
+    decisions: List[ForecastDecisionResponse]
+    execution_time_seconds: float
+
+
+
 
 

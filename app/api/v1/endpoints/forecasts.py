@@ -16,6 +16,13 @@ from app.core.exceptions import EntityNotFoundException
 from app.core.security import require_roles, AuthenticatedUser, PLANNER_ROLES, VIEWER_ROLES
 from app.models.facility import Store
 from app.models.product import Product
+from app.schemas.ai import (
+    ForecastDecisionRequest,
+    ForecastDecisionResponse,
+    BatchForecastDecisionRequest,
+    BatchForecastDecisionResponse,
+)
+from app.services.ollama_service import OllamaService
 
 router = APIRouter(prefix="/forecasts", tags=["Demand Forecasting"])
 
@@ -104,6 +111,48 @@ def run_forecast(
     return response
 
 
+@router.post(
+    "/decision",
+    response_model=ForecastDecisionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Synthesize LLM prediction decision & accessibility explanation",
+    description="Uses Ollama LLM (nemotron-3-ultra:cloud) to interpret ML quantile forecasts into accessible plain language and recommend replenishment cases/units with safety buffer."
+)
+def evaluate_forecast_decision(
+    payload: ForecastDecisionRequest,
+    current_user: AuthenticatedUser = Depends(require_roles(VIEWER_ROLES)),
+) -> ForecastDecisionResponse:
+    return OllamaService.audit_and_decide_forecast(req=payload)
+
+
+@router.post(
+    "/batch-decision",
+    response_model=BatchForecastDecisionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Batch evaluate ML forecast decisions with LLM reasoning",
+    description="Processes multiple store-SKU forecasts, generating decision verdicts, recommended units, and accessibility narratives."
+)
+def batch_evaluate_forecast_decisions(
+    payload: BatchForecastDecisionRequest,
+    current_user: AuthenticatedUser = Depends(require_roles(VIEWER_ROLES)),
+) -> BatchForecastDecisionResponse:
+    import time
+    start_time = time.time()
+    decisions = []
+    model_name = payload.model or "nemotron-3-ultra:cloud"
+    for item in payload.items:
+        dec = OllamaService.audit_and_decide_forecast(req=item, model=model_name)
+        decisions.append(dec)
+        model_name = dec.model_used
+    elapsed = time.time() - start_time
+    return BatchForecastDecisionResponse(
+        total_evaluated=len(decisions),
+        model_used=model_name,
+        decisions=decisions,
+        execution_time_seconds=round(elapsed, 3),
+    )
+
+
 @router.get(
     "/{forecast_id}",
     response_model=ForecastRunResponse,
@@ -117,3 +166,4 @@ def get_forecast(
     if forecast_id not in _FORECAST_REGISTRY:
         raise EntityNotFoundException("ForecastRun", forecast_id)
     return _FORECAST_REGISTRY[forecast_id]
+
