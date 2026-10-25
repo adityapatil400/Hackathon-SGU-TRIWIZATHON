@@ -12,6 +12,14 @@ export interface ChatContext {
   warehouseId?: string;
   retailerId?: string;
   planCode?: string;
+  systemResources?: Record<string, any>;
+}
+
+export interface AgenticToolExecution {
+  tool_name: string;
+  inputs?: Record<string, any>;
+  output_summary?: string;
+  status?: string;
 }
 
 export interface ChatQueryResponse {
@@ -21,6 +29,9 @@ export interface ChatQueryResponse {
   intent: string;
   suggested_followups: string[];
   is_ai_generated: boolean;
+  active_model?: string;
+  tools_executed?: AgenticToolExecution[];
+  structured_card?: Record<string, any>;
   missing_information?: string;
   response_timestamp: string;
 }
@@ -33,6 +44,9 @@ export interface ChatMessage {
   sources?: ChatSourceItem[];
   suggestedFollowups?: string[];
   isAiGenerated?: boolean;
+  activeModel?: string;
+  toolsExecuted?: AgenticToolExecution[];
+  structuredCard?: Record<string, any>;
   missingInformation?: string;
   isError?: boolean;
   isPending?: boolean;

@@ -15,6 +15,7 @@ import { ProfileView } from './components/ProfileView';
 import { MapSection } from './components/map-section/MapSection';
 import { DemoWalkthroughModal } from './components/DemoWalkthroughModal';
 import { WhatIfSimulatorModal } from './components/WhatIfSimulatorModal';
+import { HetvayaAgenticChatbot } from './components/HetvayaAgenticChatbot';
 import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from './context/TranslationContext';
 
@@ -129,9 +130,10 @@ export const App: React.FC = () => {
   const [planRun, setPlanRun] = useState<PlanRun | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
-  // Modals
+  // Modals & Copilot
   const [isDemoModalOpen, setIsDemoModalOpen] = useState<boolean>(false);
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState<boolean>(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState<boolean>(false);
 
   // Initial backend health probe & data load
   useEffect(() => {
@@ -556,6 +558,7 @@ export const App: React.FC = () => {
         onOpenDemoModal={() => setIsDemoModalOpen(true)}
         onOpenWhatIfModal={() => setIsWhatIfModalOpen(true)}
         onTriggerSync={handleTriggerSync}
+        onOpenChatbot={() => setIsChatbotOpen(true)}
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
@@ -773,6 +776,21 @@ export const App: React.FC = () => {
         baseCases={planRun?.totalCases || 38}
         baseFreight={planRun?.totalFreightRupees || 1420}
         baseMargin={planRun?.expectedMarginRupees || 49958}
+      />
+
+      {/* HETVAYA Agentic Copilot (nemotron-3-ultra:cloud) with Continuous Live State */}
+      <HetvayaAgenticChatbot
+        products={products}
+        warehouses={warehouses}
+        retailers={retailers}
+        routes={routes}
+        batches={batches}
+        forecasts={forecasts}
+        planRun={planRun}
+        userRole={userRole}
+        activeTab={activeTab}
+        isOpen={isChatbotOpen}
+        onClose={() => setIsChatbotOpen(false)}
       />
     </div>
   );

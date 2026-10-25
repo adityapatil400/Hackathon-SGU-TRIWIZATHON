@@ -37,12 +37,17 @@ class Settings(BaseSettings):
     # Core Architecture Authority Rules
     ALLOW_DIRECT_DECISION_COMMIT: bool = False  # Strict rule: decision service can NEVER directly commit
     
-    # Ollama Local LLM Configuration
+    # Ollama Local / Cloud LLM Configuration
     OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3.2:latest"
-    OLLAMA_FALLBACK_MODEL: str = "gemma4:12b"
-    OLLAMA_TIMEOUT_SECONDS: float = 30.0
+    OLLAMA_MODEL: str = "nemotron-3-ultra:cloud"
+    OLLAMA_FALLBACK_MODEL: str = "llama3.2:latest"
+    OLLAMA_TIMEOUT_SECONDS: float = 45.0
     OLLAMA_ENABLED: bool = True
+    
+    # Fuel Price & External News APIs
+    SERPAPI_API_KEY: Optional[str] = None
+    BASE_DIESEL_PRICE_INR: float = 90.00
+    FUEL_SENSITIVITY_FACTOR: float = 0.45
     
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -21,7 +21,8 @@ import {
   Moon,
   Languages,
   UserCheck,
-  Bell
+  Bell,
+  Bot
 } from 'lucide-react';
 import { UserRole, ThemeMode } from '../types';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../context/TranslationContext';
@@ -41,6 +42,7 @@ interface NavbarProps {
   onOpenDemoModal: () => void;
   onOpenWhatIfModal: () => void;
   onTriggerSync: () => void;
+  onOpenChatbot?: () => void;
   theme?: ThemeMode;
   onToggleTheme?: () => void;
 }
@@ -57,6 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDemoModal,
   onOpenWhatIfModal,
   onTriggerSync,
+  onOpenChatbot,
   theme = 'day',
   onToggleTheme,
 }) => {
@@ -371,6 +374,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>{t('header.dayMode', 'Day Mode (Light Enterprise)')}</span>
               </>
             )}
+          </button>
+        )}
+
+        {onOpenChatbot && (
+          <button
+            type="button"
+            onClick={onOpenChatbot}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:opacity-95 transition-all shadow-md shadow-blue-500/20 cursor-pointer border border-white/20 group"
+          >
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+              <span>HETVAYA Copilot</span>
+            </div>
+            <span className="text-[9px] font-mono bg-white/20 px-1.5 py-0.5 rounded text-white font-semibold">
+              nemotron
+            </span>
           </button>
         )}
 

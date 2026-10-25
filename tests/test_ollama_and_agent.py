@@ -85,7 +85,7 @@ def ai_test_users(db_session: Session):
 def test_ollama_service_status_and_discovery():
     status = OllamaService.get_status()
     assert status.base_url == "http://localhost:11434"
-    assert status.configured_model == "llama3.2:latest"
+    assert status.configured_model in ("nemotron-3-ultra:cloud", "llama3.2:latest")
     # Live daemon has models installed (e.g. llama3.2:latest or gemma4:12b)
     if status.is_connected:
         assert len(status.available_models) >= 1
