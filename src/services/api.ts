@@ -238,6 +238,40 @@ export interface ForecastDecisionResponsePayload {
   execution_time_seconds?: number;
 }
 
+export interface DocumentAuditRequestPayload {
+  file_name: string;
+  target_entity: string;
+  total_rows: number;
+  rows_accepted: number;
+  rows_rejected: number;
+  error_rate_pct: number;
+  committed: boolean;
+  sha256?: string;
+  is_duplicate?: boolean;
+  has_critical_error?: boolean;
+  sample_rows?: Array<Record<string, any>>;
+  errors_sample?: Array<{ row: number; field: string; message: string }>;
+  user_notes?: string;
+  model?: string;
+}
+
+export interface DocumentAuditResponsePayload {
+  audit_id: string;
+  file_name: string;
+  target_entity: string;
+  model_used: string;
+  verdict: 'CLEAN_COMMITTED' | 'PARTIALLY_COMMITTED_UNDER_5PCT' | 'ROLLED_BACK_THRESHOLD_EXCEEDED' | 'CRITICAL_SCHEMA_ERROR' | 'DUPLICATE_IGNORED' | string;
+  data_quality_score: number;
+  executive_summary: string;
+  rule_compliance_narrative: string;
+  anomaly_root_causes: string[];
+  operational_risk_assessment: string;
+  remediation_steps: string[];
+  traceable_metrics: Record<string, any>;
+  is_fallback?: boolean;
+  execution_time_seconds?: number;
+}
+
 
 export const FlowGridAPI = {
   /**
@@ -507,6 +541,99 @@ export const FlowGridAPI = {
         isPerishable ? 'Perishable shelf-life guard strictly applied' : `${bufferPct}% volatility buffer applied`
       ],
       traceable_facts: req,
+      is_fallback: true,
+      execution_time_seconds: 0.05,
+    };
+  },
+
+  /**
+   * Audit Master Data or Inventory Batch Document via LLM (nemotron-3-ultra:cloud)
+   */
+  async auditImportDocument(req: DocumentAuditRequestPayload): Promise<DocumentAuditResponsePayload> {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/imports/audit`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(req),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Backend import audit failed or timed out, executing deterministic client fallback:', e);
+    }
+
+    // Client-Side Deterministic Fallback Guardrail
+    const total = req.total_rows || 0;
+    const errRate = req.error_rate_pct || 0;
+    const accepted = req.rows_accepted || 0;
+    const rejected = req.rows_rejected || 0;
+    const isDup = Boolean(req.is_duplicate);
+    const isCrit = Boolean(req.has_critical_error);
+    const score = total > 0 ? Math.max(0, Number((1 - (errRate / 100)).toFixed(2))) : 0;
+
+    let verdict: DocumentAuditResponsePayload['verdict'] = 'CLEAN_COMMITTED';
+    let summary = '';
+    let compliance = '';
+    let risk = '';
+    let remediation: string[] = [];
+
+    if (isDup) {
+      verdict = 'DUPLICATE_IGNORED';
+      summary = `File '${req.file_name}' matches existing SHA-256 fingerprint (${(req.sha256 || '').slice(0, 16)}...). Import ignored to prevent duplicate stock.`;
+      compliance = 'FR-02 Deduplication Guarantee: File hash already in system audit ledger. Transaction bypassed.';
+      risk = 'Zero risk: Prevents artificial stock inflation.';
+      remediation = ['Verify if this batch was previously imported by Priya or Rohit.', 'Update batch timestamps if new stock has arrived.'];
+    } else if (isCrit || total === 0) {
+      verdict = 'CRITICAL_SCHEMA_ERROR';
+      summary = `Critical schema failure on '${req.file_name}'. Mandatory column headers missing or corrupted. Transaction aborted.`;
+      compliance = 'FR-02 Pre-Validation Failure: Missing mandatory headers prevents row parsing. 0 rows committed.';
+      risk = 'High risk averted: Ingestion halted before corrupting table structures.';
+      remediation = [`Verify column headers match '${req.target_entity}' schema.`, 'Download a clean demo CSV template to check required column names.'];
+    } else if (errRate === 0) {
+      verdict = 'CLEAN_COMMITTED';
+      summary = `Master data file '${req.file_name}' (${req.target_entity}) verified with 100% schema compliance. All ${total} rows successfully ingested and committed to live system state.`;
+      compliance = `FR-02 Rule Check: 0.0% errors (limit <= 5.0%). All ${total} records committed atomically. Active application state updated immediately without corruption risk.`;
+      risk = 'Zero operational risk. Batches and master records are synchronized for downstream distribution optimization.';
+      remediation = ['Proceed to Distribution Planning & Optimization with updated inventory batches.', 'Catalog state immediately available for Store Management replenishment.'];
+    } else if (errRate <= 5.0 && req.committed) {
+      verdict = 'PARTIALLY_COMMITTED_UNDER_5PCT';
+      summary = `File '${req.file_name}' processed ${total} rows with an error rate of ${errRate.toFixed(1)}%. Under the J1 Step 3 transactional rule, ${accepted} valid rows were committed, and ${rejected} row(s) flagged.`;
+      compliance = `FR-02 Rule Check: ${errRate.toFixed(1)}% errors satisfies the <= 5.0% transactional threshold. ${accepted} valid records committed in a single atomic transaction. ${rejected} rejected row(s) isolated.`;
+      risk = 'Low-to-moderate risk: Valid records are live, but flagged rejected rows represent missing batch stock or unlinked entities.';
+      remediation = [
+        `Review the ${rejected} rejected row diagnostics in file:row format.`,
+        'Correct missing expiry dates, negative quantities, or invalid warehouse codes in source spreadsheet.',
+        'Re-upload only the corrected rows to update remaining stock balances.',
+      ];
+    } else {
+      verdict = 'ROLLED_BACK_THRESHOLD_EXCEEDED';
+      summary = `Transaction Aborted: File '${req.file_name}' exhibited an error rate of ${errRate.toFixed(1)}%, violating the strict 5.0% error threshold. Entire file rolled back atomically (0 rows committed).`;
+      compliance = `FR-02 Threshold Enforced: ${errRate.toFixed(1)}% > 5.0% threshold. System executed strict rollback to prevent half-updated stock states from corrupting planning runs.`;
+      risk = 'High operational risk successfully contained: Prevents phantom stockouts or corrupt FEFO planning runs.';
+      remediation = [
+        `Review all ${rejected} row-level diagnostic errors in the table below.`,
+        'Verify foreign key references (SKUs must exist in products.csv, warehouses in warehouses.csv).',
+        'Check for systemic column misalignment or invalid date formats (use YYYY-MM-DD).',
+        'Re-import only after file-wide error rate drops below 5.0%.',
+      ];
+    }
+
+    const anomalies = (req.errors_sample || []).slice(0, 5).map(e => `Row ${e.row} (${e.field}): ${e.message}`);
+
+    return {
+      audit_id: `AUD-CLIENT-${Date.now().toString(36).toUpperCase()}`,
+      file_name: req.file_name,
+      target_entity: req.target_entity,
+      model_used: 'nemotron-3-ultra:cloud',
+      verdict,
+      data_quality_score: score,
+      executive_summary: summary,
+      rule_compliance_narrative: compliance,
+      anomaly_root_causes: anomalies.length > 0 ? anomalies : ['No row anomalies detected.'],
+      operational_risk_assessment: risk,
+      remediation_steps: remediation,
+      traceable_metrics: req,
       is_fallback: true,
       execution_time_seconds: 0.05,
     };

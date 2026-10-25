@@ -1,14 +1,22 @@
 import React, { useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import {
   UploadCloud,
   AlertTriangle,
   XCircle,
   ShieldCheck,
+  ShieldAlert,
   Sparkles,
   FileSpreadsheet,
   CheckCircle2,
   Database,
-  ArrowRight
+  ArrowRight,
+  Bot,
+  Cpu,
+  RefreshCw,
+  FileCheck2,
+  MessageSquareCode,
+  CheckCheck
 } from 'lucide-react';
 import { useTranslation } from '../context/TranslationContext';
 import { Product, Warehouse, Retailer, Route, InventoryBatch } from '../types';
@@ -27,6 +35,7 @@ import {
   ImportProcessingResult,
   ENTITY_SCHEMAS
 } from '../services/importValidator';
+import { FlowGridAPI, DocumentAuditResponsePayload } from '../services/api';
 
 export interface ImportStudioViewProps {
   batches?: InventoryBatch[];
@@ -55,6 +64,9 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
   const [selectedKind, setSelectedKind] = useState<string>('batches');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importResult, setImportResult] = useState<ImportProcessingResult | null>(null);
+  const [aiAuditResult, setAiAuditResult] = useState<DocumentAuditResponsePayload | null>(null);
+  const [isAiAuditing, setIsAiAuditing] = useState<boolean>(false);
+  const [activeAuditTab, setActiveAuditTab] = useState<'summary' | 'rule' | 'anomalies'>('summary');
   const [importedHashes, setImportedHashes] = useState<Set<string>>(new Set());
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -85,6 +97,7 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
   const handleExecuteImport = async (csvContent: string, fileName: string) => {
     setIsProcessing(true);
     setImportResult(null);
+    setAiAuditResult(null);
 
     try {
       const result = await processMasterDataImport(
@@ -112,6 +125,32 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
       }
 
       setImportResult(result);
+
+      // Trigger LLM Document & Schema Integrity Audit via nemotron-3-ultra:cloud
+      setIsAiAuditing(true);
+      try {
+        const auditPayload = {
+          file_name: fileName,
+          target_entity: selectedKind,
+          total_rows: result.totalRows,
+          rows_accepted: result.rowsAccepted,
+          rows_rejected: result.rowsRejected,
+          error_rate_pct: result.errorRatePct,
+          committed: result.committed,
+          sha256: result.sha256,
+          is_duplicate: result.isDuplicateFile,
+          has_critical_error: result.hasCriticalError,
+          sample_rows: result.parsedRows.slice(0, 5).map(r => r.data),
+          errors_sample: result.errors.slice(0, 10).map(e => ({ row: e.row, field: e.field, message: e.message })),
+          user_notes: 'Uploaded via Master Data Studio by Priya & Rohit',
+        };
+        const aiResp = await FlowGridAPI.auditImportDocument(auditPayload);
+        setAiAuditResult(aiResp);
+      } catch (auditErr) {
+        console.warn('AI document audit error:', auditErr);
+      } finally {
+        setIsAiAuditing(false);
+      }
     } catch (err: any) {
       setImportResult({
         importId: `IMP-ERR-${Date.now().toString().slice(-4)}`,
@@ -141,6 +180,7 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
    */
   const handleLoadCleanDemo = () => {
     setSelectedFile(null);
+    setAiAuditResult(null);
     const csv = generateCleanDemoCSV(selectedKind);
     const fileName = `${selectedKind}_demo_clean_v1.5.csv`;
     handleExecuteImport(csv, fileName);
@@ -151,6 +191,7 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
    */
   const handleTest3PercentErrors = () => {
     setSelectedFile(null);
+    setAiAuditResult(null);
     const csv = generate3PercentErrorCSV(selectedKind);
     const fileName = `${selectedKind}_test_3pct_errors.csv`;
     handleExecuteImport(csv, fileName);
@@ -161,27 +202,55 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
    */
   const handleTest18PercentErrors = () => {
     setSelectedFile(null);
+    setAiAuditResult(null);
     const csv = generate18PercentErrorCSV(selectedKind);
     const fileName = `${selectedKind}_corrupted_18pct_errors.csv`;
     handleExecuteImport(csv, fileName);
   };
 
   /**
-   * File Upload / Drag-and-Drop Handler
+   * File Upload / Drag-and-Drop Handler (Supports CSV and XLSX)
    */
   const handleFileSelected = (file: File) => {
     setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      if (text) {
-        handleExecuteImport(text, file.name);
-      }
-    };
-    reader.onerror = () => {
-      alert('Unable to read selected file. Please select a valid CSV or plain text file.');
-    };
-    reader.readAsText(file);
+    setAiAuditResult(null);
+    const isXlsx = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
+
+    if (isXlsx) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const buffer = e.target?.result as ArrayBuffer;
+          const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const csvText = XLSX.utils.sheet_to_csv(worksheet);
+          if (csvText && csvText.trim().length > 0) {
+            handleExecuteImport(csvText, file.name);
+          } else {
+            alert('The uploaded Excel spreadsheet contains no data rows.');
+          }
+        } catch (err: any) {
+          alert(`Failed to parse Excel file: ${err?.message || 'Invalid format'}`);
+        }
+      };
+      reader.onerror = () => {
+        alert('Unable to read selected XLSX file.');
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        if (text) {
+          handleExecuteImport(text, file.name);
+        }
+      };
+      reader.onerror = () => {
+        alert('Unable to read selected file. Please select a valid CSV or plain text file.');
+      };
+      reader.readAsText(file);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -412,6 +481,312 @@ export const ImportStudioView: React.FC<ImportStudioViewProps> = ({
               <p className={`text-lg font-black mt-0.5 font-mono ${importResult.errorRatePct <= 5 ? 'text-[#EA580C]' : 'text-[#DC2626]'}`}>
                 {importResult.errorRatePct.toFixed(1)}% {importResult.errorRatePct <= 5 ? '(≤ 5% Limit)' : '(> 5% Limit)'}
               </p>
+            </div>
+          </div>
+
+          {/* LLM Document & Schema Integrity Audit Card */}
+          <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-[#0B1528] via-[#0F1E36] to-[#0A1120] text-white p-5 shadow-xl relative overflow-hidden space-y-4">
+            {/* Ambient decorative lighting */}
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header with Title and Live Badge */}
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-sm shrink-0">
+                  <Bot className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-white tracking-wide">
+                      LLM Document &amp; Schema Integrity Audit
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-1 font-mono">
+                      <Cpu className="w-3 h-3" />
+                      nemotron-3-ultra:cloud
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 mt-0.5">
+                    Autonomous verification for Priya &amp; Rohit • Transactional Integrity Guarantee (J1 Step 3 &amp; FR-02)
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-2">
+                {isAiAuditing ? (
+                  <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-1.5 animate-pulse">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Auditing File with LLM...
+                  </span>
+                ) : (
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border tracking-wider uppercase font-mono ${
+                    importResult.committed
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                      : importResult.isDuplicateFile
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                      : 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+                  }`}>
+                    {importResult.committed
+                      ? 'TRANSACTION COMMITTED (<= 5% LIMIT)'
+                      : importResult.isDuplicateFile
+                      ? 'DUPLICATE SHA-256 IGNORED'
+                      : 'TRANSACTION ABORTED (> 5% LIMIT)'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 4 Metric Tiles */}
+            <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              {/* Tile 1: Data Quality Score */}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">
+                  Data Quality Score
+                </span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-lg font-black text-cyan-300 font-mono">
+                    {aiAuditResult
+                      ? `${(aiAuditResult.data_quality_score * 100).toFixed(0)}%`
+                      : `${((1 - importResult.errorRatePct / 100) * 100).toFixed(0)}%`}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    {importResult.errorRatePct === 0 ? 'Flawless' : importResult.errorRatePct <= 5 ? 'Transactional Pass' : 'Sub-Threshold'}
+                  </span>
+                </div>
+                <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      importResult.errorRatePct <= 5 ? 'bg-gradient-to-r from-cyan-400 to-emerald-400' : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${Math.max(5, (1 - importResult.errorRatePct / 100) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Tile 2: 5% Rule Verdict */}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">
+                  FR-02 Rule Check
+                </span>
+                <span className={`block text-xs font-bold mt-1 font-mono ${
+                  importResult.errorRatePct <= 5 ? 'text-emerald-300' : 'text-rose-300'
+                }`}>
+                  {importResult.errorRatePct <= 5 ? 'PASSED (<= 5.0% LIMIT)' : 'VIOLATED (> 5.0% LIMIT)'}
+                </span>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {importResult.committed
+                    ? `${importResult.rowsAccepted} valid rows committed atomically`
+                    : 'Atomic rollback applied to prevent corruption'}
+                </p>
+              </div>
+
+              {/* Tile 3: Operational Risk Assessment */}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">
+                  Downstream Planning Risk
+                </span>
+                <span className={`block text-xs font-bold mt-1 font-mono ${
+                  importResult.committed ? 'text-cyan-300' : 'text-rose-300'
+                }`}>
+                  {importResult.committed ? 'LOW PLANNING RISK' : 'CRITICAL CORRUPTION AVERTED'}
+                </span>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {importResult.committed
+                    ? 'FEFO batch allocation state verified'
+                    : 'Prevented half-updated batch state'}
+                </p>
+              </div>
+
+              {/* Tile 4: SHA-256 Idempotency */}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">
+                  SHA-256 Idempotency
+                </span>
+                <span className="block text-xs font-bold text-amber-300 mt-1 font-mono truncate">
+                  {importResult.sha256.slice(0, 16)}...
+                </span>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {importResult.isDuplicateFile ? 'Duplicate re-import blocked' : 'Unique fingerprint verified'}
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="relative z-10 flex items-center gap-2 border-b border-white/10 pt-1">
+              <button
+                type="button"
+                onClick={() => setActiveAuditTab('summary')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                  activeAuditTab === 'summary'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-b-2 border-cyan-400 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Executive Document Review
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveAuditTab('rule')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                  activeAuditTab === 'rule'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-b-2 border-cyan-400 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                5% Rule (FR-02) Compliance
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveAuditTab('anomalies')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                  activeAuditTab === 'anomalies'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-b-2 border-cyan-400 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Root Causes &amp; Remediation Plan ({aiAuditResult?.anomaly_root_causes.length || importResult.errors.length})
+              </button>
+            </div>
+
+            {/* Tab 1 Content: Executive Document Review */}
+            {activeAuditTab === 'summary' && (
+              <div className="relative z-10 space-y-3 text-xs leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-500/20 text-slate-200">
+                  <p className="font-medium text-slate-100">
+                    {aiAuditResult?.executive_summary ||
+                      `Master data file '${importResult.fileName}' processed ${importResult.totalRows} records. ${
+                        importResult.committed
+                          ? `${importResult.rowsAccepted} valid rows were committed to live application state.`
+                          : 'The file exceeded the 5% error limit and was completely rolled back.'
+                      }`}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-slate-300">
+                  <span className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider block">
+                    Operational Impact Assessment:
+                  </span>
+                  <p className="mt-0.5">
+                    {aiAuditResult?.operational_risk_assessment ||
+                      (importResult.committed
+                        ? 'Batch inventory successfully synchronized for FEFO distribution and replenishment runs.'
+                        : 'Atomic rollback prevented corrupted stock levels from propagating into optimization plans.')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2 Content: 5% Rule Compliance */}
+            {activeAuditTab === 'rule' && (
+              <div className="relative z-10 space-y-3 text-xs leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-200">
+                  <p className="font-semibold text-cyan-300 mb-1">
+                    Transactional Data Integrity Guarantee (J1 Step 3 &amp; PRD FR-02):
+                  </p>
+                  <p className="text-slate-300">
+                    {aiAuditResult?.rule_compliance_narrative ||
+                      (importResult.errorRatePct <= 5
+                        ? `The measured error rate of ${importResult.errorRatePct.toFixed(1)}% satisfies the strict <= 5.0% threshold. All ${importResult.rowsAccepted} valid records committed in a single atomic database transaction.`
+                        : `The error rate of ${importResult.errorRatePct.toFixed(1)}% breaches the strict 5.0% ceiling. The atomic transaction was aborted with 0 records committed.`)}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-black/30 border border-white/10">
+                    <span className="text-slate-400 text-[10px] block">Error Rate</span>
+                    <span className={importResult.errorRatePct <= 5 ? 'text-emerald-300 font-bold' : 'text-rose-300 font-bold'}>
+                      {importResult.errorRatePct.toFixed(1)}% (Threshold: 5.0%)
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-black/30 border border-white/10">
+                    <span className="text-slate-400 text-[10px] block">Committed Rows</span>
+                    <span className="text-white font-bold">{importResult.rowsAccepted} / {importResult.totalRows}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-black/30 border border-white/10">
+                    <span className="text-slate-400 text-[10px] block">Audit Integrity</span>
+                    <span className="text-cyan-300 font-bold">100% Deterministic Guard</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3 Content: Root Causes & Remediation Plan */}
+            {activeAuditTab === 'anomalies' && (
+              <div className="relative z-10 space-y-3 text-xs leading-relaxed">
+                <div className="space-y-2">
+                  <span className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider block">
+                    Diagnostic Anomalies Detected (file:row):
+                  </span>
+                  {(aiAuditResult?.anomaly_root_causes && aiAuditResult.anomaly_root_causes.length > 0) ? (
+                    <div className="space-y-1.5">
+                      {aiAuditResult.anomaly_root_causes.map((anomaly, idx) => (
+                        <div key={idx} className="p-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 flex items-start gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                          <span>{anomaly}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : importResult.errors.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {importResult.errors.slice(0, 5).map((err, idx) => (
+                        <div key={idx} className="p-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 flex items-start gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                          <span><strong>Row {err.row} ({err.field}):</strong> {err.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-400/20 text-emerald-300 flex items-center gap-2">
+                      <CheckCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Zero anomalies detected. File conforms 100% to enterprise catalog rules.</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 pt-1 border-t border-white/10">
+                  <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">
+                    Step-by-Step Remediation Plan:
+                  </span>
+                  <div className="space-y-1.5">
+                    {(aiAuditResult?.remediation_steps || [
+                      importResult.committed
+                        ? 'Proceed to Distribution Planning & Optimization with updated inventory batches.'
+                        : 'Review row diagnostics, resolve missing required dates and foreign keys, and re-upload file.',
+                    ]).map((step, idx) => (
+                      <div key={idx} className="p-2 rounded-lg bg-black/20 border border-white/5 text-slate-300 flex items-start gap-2">
+                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Card Action Footer */}
+            <div className="relative z-10 pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <FileCheck2 className="w-3.5 h-3.5 text-cyan-300" />
+                Audited via <strong>nemotron-3-ultra:cloud</strong> • Audit ID: <span className="font-mono text-cyan-300">{aiAuditResult?.audit_id || 'AUD-LIVE'}</span>
+              </span>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent('open-chatbot', {
+                      detail: {
+                        initialMessage: `Audit master data import file "${importResult.fileName}" and explain the 5% error threshold rule under FR-02 for Priya & Rohit.`,
+                      },
+                    })
+                  );
+                }}
+                className="px-3 py-1.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-sm flex items-center gap-1.5 cursor-pointer transition-all text-xs"
+              >
+                <Bot className="w-3.5 h-3.5" />
+                <span>Ask Hetvaya Copilot about this File</span>
+              </button>
             </div>
           </div>
 

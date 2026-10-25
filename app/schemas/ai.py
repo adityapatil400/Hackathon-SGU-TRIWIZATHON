@@ -187,6 +187,41 @@ class BatchForecastDecisionResponse(BaseModel):
     execution_time_seconds: float
 
 
+class DocumentAuditRequest(BaseModel):
+    file_name: str = Field(..., description="File name of the uploaded document or demo dataset")
+    target_entity: str = Field(..., description="Target entity schema (e.g., batches, products, retailers, routes, sales)")
+    total_rows: int = Field(default=0, ge=0)
+    rows_accepted: int = Field(default=0, ge=0)
+    rows_rejected: int = Field(default=0, ge=0)
+    error_rate_pct: float = Field(default=0.0, ge=0.0, le=100.0)
+    committed: bool = Field(default=False)
+    sha256: str = Field(default="", description="SHA-256 hash of the document content")
+    is_duplicate: bool = Field(default=False)
+    has_critical_error: bool = Field(default=False)
+    sample_rows: List[Dict[str, Any]] = Field(default_factory=list, description="Sample of parsed rows")
+    errors_sample: List[Dict[str, Any]] = Field(default_factory=list, description="Diagnostics of rejected rows (file:row)")
+    user_notes: Optional[str] = Field(default=None, description="Optional coordinator notes (e.g. from Priya or Rohit)")
+    model: Optional[str] = Field(default=None, description="LLM override (e.g. nemotron-3-ultra:cloud)")
+
+
+class DocumentAuditResponse(BaseModel):
+    audit_id: str
+    file_name: str
+    target_entity: str
+    model_used: str
+    verdict: str  # "CLEAN_COMMITTED", "PARTIALLY_COMMITTED_UNDER_5PCT", "ROLLED_BACK_THRESHOLD_EXCEEDED", "CRITICAL_SCHEMA_ERROR", "DUPLICATE_IGNORED"
+    data_quality_score: float  # 0.0 to 1.0 (e.g., 0.97)
+    executive_summary: str  # Plain English executive review
+    rule_compliance_narrative: str  # Analysis of 5% rule (FR-02) and transactional integrity
+    anomaly_root_causes: List[str]  # Root causes of errors found
+    operational_risk_assessment: str  # Impact on warehouse inventory, FEFO planning, distribution
+    remediation_steps: List[str]  # Concrete instructions to fix source data
+    traceable_metrics: Dict[str, Any]
+    is_fallback: bool = False
+    execution_time_seconds: float
+
+
+
 
 
 

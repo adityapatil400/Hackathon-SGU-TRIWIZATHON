@@ -14,6 +14,8 @@ from app.schemas.ai import (
     OllamaStatusResponse,
     ForecastDecisionRequest,
     ForecastDecisionResponse,
+    DocumentAuditRequest,
+    DocumentAuditResponse,
 )
 from app.schemas.decision import CandidatePlanProposal, ProposedMovement
 
@@ -631,4 +633,219 @@ class OllamaService:
             is_fallback=True,
             execution_time_seconds=round(elapsed, 3),
         )
+
+    @classmethod
+    def audit_document_import(
+        cls,
+        req: DocumentAuditRequest,
+        model: Optional[str] = None,
+    ) -> DocumentAuditResponse:
+        """
+        Audits master data and inventory batch import documents using nemotron-3-ultra:cloud.
+        Evaluates 5% transactional rule compliance (FR-02), row-level diagnostics,
+        root-cause anomalies, and operational impact.
+        Provides a 100% deterministic fallback when Ollama is offline or times out.
+        """
+        import uuid
+        import time
+        start_time = time.time()
+        audit_id = f"AUD-{uuid.uuid4().hex[:10].upper()}"
+        target_model = model or req.model or settings.OLLAMA_MODEL or "nemotron-3-ultra:cloud"
+
+        # Determine deterministic baseline verdict & quality score
+        quality_score = max(0.0, round(1.0 - (req.error_rate_pct / 100.0), 3)) if req.total_rows > 0 else 0.0
+
+        if req.is_duplicate:
+            verdict = "DUPLICATE_IGNORED"
+        elif req.has_critical_error:
+            verdict = "CRITICAL_SCHEMA_ERROR"
+        elif req.total_rows == 0:
+            verdict = "CRITICAL_SCHEMA_ERROR"
+        elif req.error_rate_pct == 0.0:
+            verdict = "CLEAN_COMMITTED"
+        elif req.error_rate_pct <= 5.0 and req.committed:
+            verdict = "PARTIALLY_COMMITTED_UNDER_5PCT"
+        else:
+            verdict = "ROLLED_BACK_THRESHOLD_EXCEEDED"
+
+        facts = {
+            "file_name": req.file_name,
+            "target_entity": req.target_entity,
+            "total_rows": req.total_rows,
+            "rows_accepted": req.rows_accepted,
+            "rows_rejected": req.rows_rejected,
+            "error_rate_pct": req.error_rate_pct,
+            "committed": req.committed,
+            "sha256": req.sha256,
+            "is_duplicate": req.is_duplicate,
+            "has_critical_error": req.has_critical_error,
+            "sample_error_count": len(req.errors_sample),
+            "errors_sample": req.errors_sample[:10],
+            "sample_rows_count": len(req.sample_rows),
+            "sample_rows": req.sample_rows[:5],
+            "user_notes": req.user_notes or "Standard import via Master Data Studio (Priya & Rohit)",
+        }
+
+        system_prompt = (
+            "You are FlowGrid AI, an expert Enterprise Supply Chain Data Integrity & ERP Master Data Auditor. "
+            "You are auditing an uploaded document (CSV/XLSX) for Priya & Rohit in the Master Data & Batch Inventory Import Studio. "
+            "Evaluate data quality, explain the 5% error threshold transactional rule (FR-02), "
+            "identify root causes for rejected rows, assess downstream planning risks, and provide remediation steps. "
+            "CRITICAL: Ground every statement strictly in the provided facts. Do NOT invent rows or errors not in the facts. "
+            "Return valid JSON matching this schema: "
+            "{"
+            '"verdict": "CLEAN_COMMITTED" | "PARTIALLY_COMMITTED_UNDER_5PCT" | "ROLLED_BACK_THRESHOLD_EXCEEDED" | "CRITICAL_SCHEMA_ERROR" | "DUPLICATE_IGNORED", '
+            '"data_quality_score": float between 0.0 and 1.0, '
+            '"executive_summary": string, '
+            '"rule_compliance_narrative": string, '
+            '"anomaly_root_causes": [string], '
+            '"operational_risk_assessment": string, '
+            '"remediation_steps": [string]'
+            "}"
+        )
+
+        user_prompt = f"Audit uploaded master data document: {json.dumps(facts, default=str)}"
+
+        res = cls.generate(
+            prompt=user_prompt,
+            model=target_model,
+            system_prompt=system_prompt,
+            json_format=True,
+        )
+
+        elapsed = time.time() - start_time
+
+        if not res.is_fallback and res.parsed_json and "verdict" in res.parsed_json:
+            p = res.parsed_json
+            try:
+                return DocumentAuditResponse(
+                    audit_id=audit_id,
+                    file_name=req.file_name,
+                    target_entity=req.target_entity,
+                    model_used=res.model,
+                    verdict=p.get("verdict", verdict),
+                    data_quality_score=min(1.0, max(0.0, float(p.get("data_quality_score", quality_score)))),
+                    executive_summary=p.get(
+                        "executive_summary",
+                        f"Document '{req.file_name}' processed {req.total_rows} rows with an error rate of {req.error_rate_pct:.1f}%."
+                    ),
+                    rule_compliance_narrative=p.get(
+                        "rule_compliance_narrative",
+                        f"5% Error Threshold Rule: {'Passed (<= 5%)' if req.error_rate_pct <= 5.0 and req.committed else 'Violated (> 5%)'}."
+                    ),
+                    anomaly_root_causes=p.get("anomaly_root_causes", []),
+                    operational_risk_assessment=p.get(
+                        "operational_risk_assessment",
+                        "Downstream inventory allocation and FEFO constraints remain secure."
+                    ),
+                    remediation_steps=p.get("remediation_steps", []),
+                    traceable_metrics=facts,
+                    is_fallback=False,
+                    execution_time_seconds=round(elapsed, 3),
+                )
+            except Exception as parse_err:
+                logger.warning("Failed to map Ollama document audit response: %s", parse_err)
+
+        # High-reliability deterministic fallback
+        root_causes: List[str] = []
+        for err in req.errors_sample[:5]:
+            field = err.get("field", "field")
+            row = err.get("row", 0)
+            msg = err.get("message", "Validation error")
+            root_causes.append(f"Row {row} ({field}): {msg}")
+
+        if not root_causes:
+            if req.error_rate_pct == 0.0 and req.total_rows > 0:
+                root_causes.append("All rows adhere 100% to required column schemas and foreign key integrity.")
+            elif req.is_duplicate:
+                root_causes.append(f"File SHA-256 hash '{req.sha256[:16]}...' previously committed. Re-import blocked to prevent duplicate stock.")
+            elif req.has_critical_error:
+                root_causes.append("Critical schema mismatch: Missing mandatory headers or corrupt file headers.")
+
+        remediation: List[str] = []
+        if verdict == "CLEAN_COMMITTED":
+            exec_summary = (
+                f"Master data file '{req.file_name}' ({req.target_entity}) verified with 100% schema compliance. "
+                f"All {req.total_rows} rows successfully ingested and committed to live system state."
+            )
+            compliance_text = (
+                f"FR-02 Rule Check: 0.0% errors (limit <= 5.0%). All {req.total_rows} records committed atomically. "
+                f"Active application state updated immediately without corruption risk."
+            )
+            op_risk = "Zero operational risk. Batches and master records are synchronized for downstream distribution optimization."
+            remediation = [
+                "Proceed to Distribution Planning & Optimization with updated inventory batches.",
+                "Catalog state immediately available for Store Management replenishment.",
+            ]
+        elif verdict == "PARTIALLY_COMMITTED_UNDER_5PCT":
+            exec_summary = (
+                f"File '{req.file_name}' processed {req.total_rows} rows with an error rate of {req.error_rate_pct:.1f}%. "
+                f"Under the J1 Step 3 transactional rule, {req.rows_accepted} valid rows were committed, and {req.rows_rejected} row(s) flagged."
+            )
+            compliance_text = (
+                f"FR-02 Rule Check: {req.error_rate_pct:.1f}% errors satisfies the <= 5.0% transactional threshold. "
+                f"{req.rows_accepted} valid records committed in a single atomic transaction. {req.rows_rejected} rejected row(s) isolated."
+            )
+            op_risk = "Low-to-moderate risk: Valid records are live, but flagged rejected rows represent missing batch stock or unlinked entities."
+            remediation = [
+                f"Review the {req.rows_rejected} rejected row diagnostics in file:row format.",
+                "Correct missing expiry dates, negative quantities, or invalid warehouse codes in source spreadsheet.",
+                "Re-upload only the corrected rows to update remaining stock balances.",
+            ]
+        elif verdict == "DUPLICATE_IGNORED":
+            exec_summary = (
+                f"File '{req.file_name}' matches existing SHA-256 fingerprint ({req.sha256[:16]}...). "
+                f"Deduplication engine ignored file to prevent duplicate inventory counting."
+            )
+            compliance_text = "FR-02 Deduplication Guarantee: File hash already in system audit ledger. Transaction bypassed."
+            op_risk = "Zero risk: Prevents artificial stock inflation."
+            remediation = [
+                "Verify if file was already committed by another coordinator (Priya or Rohit).",
+                "If new stock arrived, ensure batch numbers or version timestamps are updated.",
+            ]
+        elif verdict == "CRITICAL_SCHEMA_ERROR":
+            exec_summary = (
+                f"Critical schema failure on '{req.file_name}'. Mandatory column headers missing or corrupted. "
+                f"Transaction aborted immediately."
+            )
+            compliance_text = "FR-02 Pre-Validation Failure: Missing mandatory headers prevents row parsing. 0 rows committed."
+            op_risk = "High risk averted: Ingestion halted before corrupting table structures."
+            remediation = [
+                f"Download clean sample template for '{req.target_entity}'.",
+                "Ensure header row contains all required schema fields.",
+            ]
+        else:  # ROLLED_BACK_THRESHOLD_EXCEEDED
+            exec_summary = (
+                f"Transaction Aborted: File '{req.file_name}' exhibited an error rate of {req.error_rate_pct:.1f}%, "
+                f"violating the strict 5.0% error threshold. Entire file rolled back atomically (0 rows committed)."
+            )
+            compliance_text = (
+                f"FR-02 Threshold Enforced: {req.error_rate_pct:.1f}% > 5.0% threshold. "
+                f"System executed strict rollback to prevent half-updated stock states from corrupting planning runs."
+            )
+            op_risk = "High operational risk successfully contained: Prevents phantom stockouts or corrupt FEFO planning runs."
+            remediation = [
+                f"Review all {req.rows_rejected} row-level diagnostic errors in the table below.",
+                "Verify foreign key references (SKUs must exist in products.csv, warehouses in warehouses.csv).",
+                "Check for systemic column misalignment or invalid date formats (use YYYY-MM-DD).",
+                "Re-import only after file-wide error rate drops below 5.0%.",
+            ]
+
+        return DocumentAuditResponse(
+            audit_id=audit_id,
+            file_name=req.file_name,
+            target_entity=req.target_entity,
+            model_used=f"{target_model} (fallback)",
+            verdict=verdict,
+            data_quality_score=quality_score,
+            executive_summary=exec_summary,
+            rule_compliance_narrative=compliance_text,
+            anomaly_root_causes=root_causes,
+            operational_risk_assessment=op_risk,
+            remediation_steps=remediation,
+            traceable_metrics=facts,
+            is_fallback=True,
+            execution_time_seconds=round(elapsed, 3),
+        )
+
 

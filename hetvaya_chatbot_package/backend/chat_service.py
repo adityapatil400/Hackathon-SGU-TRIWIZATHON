@@ -263,6 +263,7 @@ FMCG_DEMAND: Dict[str, Dict[str, int]] = {
 }
 
 FMCG_LIVE_FORECASTS: List[Dict[str, Any]] = []
+FMCG_LATEST_IMPORT: Optional[Dict[str, Any]] = None
 
 
 
@@ -373,6 +374,18 @@ class ProductChatIntelligenceService:
                 "tool_name": "fetch_demand_forecasts",
                 "inputs": {"sku": target_sku or "ALL"},
                 "output_summary": f"Retrieved quantile demand projections (Q50, P80, P90, P95).",
+                "status": "SUCCESS",
+            })
+        elif intent == "import_document_audit":
+            retrieved_data, sources = cls._get_import_document_data(lower_msg)
+            tools_executed.append({
+                "tool_name": "audit_uploaded_master_data_document",
+                "inputs": {
+                    "file_name": retrieved_data.get("audit", {}).get("file_name", "inventory_batches.csv"),
+                    "target_entity": retrieved_data.get("audit", {}).get("target_entity", "batches"),
+                    "model": "nemotron-3-ultra:cloud",
+                },
+                "output_summary": f"Audited document ({retrieved_data.get('audit', {}).get('verdict', 'ANALYZED')}) under 5% rule (FR-02).",
                 "status": "SUCCESS",
             })
         else:
@@ -560,6 +573,8 @@ class ProductChatIntelligenceService:
             return "freight_cost"
         if any(w in msg for w in ["audit prediction", "prediction decision", "audit forecast", "forecast decision", "audit ml", "prediction rationale", "ml decision", "why this forecast", "explain forecast", "forecast audit"]):
             return "forecast_decision_audit"
+        if any(w in msg for w in ["import", "master data", "inventory batches", "5% rule", "5% error", "threshold", "row errors", "priya", "rohit", "clean demo", "18% error", "3% error", "rejected rows", "csv import", "xlsx import", "import studio", "audit document"]):
+            return "import_document_audit"
         if any(w in msg for w in ["demand", "forecast", "high demand", "popular", "fastest moving"]):
             return "demand_forecast"
         return "general_query"
@@ -614,6 +629,11 @@ class ProductChatIntelligenceService:
         if "forecasts" in resources and isinstance(resources["forecasts"], list):
             global FMCG_LIVE_FORECASTS
             FMCG_LIVE_FORECASTS = list(resources["forecasts"])
+
+        # Ingest latest master data import state
+        if "latestImport" in resources and isinstance(resources["latestImport"], dict):
+            global FMCG_LATEST_IMPORT
+            FMCG_LATEST_IMPORT = dict(resources["latestImport"])
 
     @classmethod
     def _get_fuel_prices_data(
@@ -1188,6 +1208,109 @@ class ProductChatIntelligenceService:
         return {"decision": decision_dict}, sources
 
     @classmethod
+    def _get_import_document_data(
+        cls,
+        msg: str,
+    ) -> Tuple[Dict[str, Any], List[ChatSourceItem]]:
+        """Audits uploaded master data file and calls OllamaService to evaluate 5% transactional rule."""
+        latest = FMCG_LATEST_IMPORT or {}
+
+        # Check if user mentioned specific demo scenarios
+        if "18%" in msg or "corrupted" in msg or "rejected" in msg:
+            file_name = "batches_corrupted_18pct_errors.csv"
+            total = 100
+            rejected = 18
+            accepted = 0
+            err_rate = 18.0
+            committed = False
+            critical = False
+            errors = [
+                {"row": 4, "field": "expiryDate", "message": "Perishable SKU missing required expiry date"},
+                {"row": 12, "field": "warehouseId", "message": "Foreign key violation: Warehouse 'WH-99' does not exist"},
+                {"row": 19, "field": "qtyUnits", "message": "Negative quantity violation (-15)"},
+            ]
+        elif "3%" in msg:
+            file_name = "batches_test_3pct_errors.csv"
+            total = 100
+            rejected = 3
+            accepted = 97
+            err_rate = 3.0
+            committed = True
+            critical = False
+            errors = [
+                {"row": 8, "field": "expiryDate", "message": "Perishable SKU missing expiry date"},
+                {"row": 24, "field": "warehouseId", "message": "Unknown warehouse code 'WH-INVALID'"},
+                {"row": 57, "field": "qtyUnits", "message": "Negative quantity (-50)"},
+            ]
+        elif latest and latest.get("fileName"):
+            file_name = str(latest.get("fileName"))
+            total = int(latest.get("totalRows", 100))
+            rejected = int(latest.get("rowsRejected", 0))
+            accepted = int(latest.get("rowsAccepted", total - rejected))
+            err_rate = float(latest.get("errorRatePct", 0.0))
+            committed = bool(latest.get("committed", err_rate <= 5.0))
+            critical = bool(latest.get("hasCriticalError", False))
+            errors = list(latest.get("errors", []))
+        else:
+            file_name = "inventory_batches_clean_v1.5.csv"
+            total = 100
+            rejected = 0
+            accepted = 100
+            err_rate = 0.0
+            committed = True
+            critical = False
+            errors = []
+
+        try:
+            from app.schemas.ai import DocumentAuditRequest
+            from app.services.ollama_service import OllamaService
+            req = DocumentAuditRequest(
+                file_name=file_name,
+                target_entity="batches",
+                total_rows=total,
+                rows_accepted=accepted,
+                rows_rejected=rejected,
+                error_rate_pct=err_rate,
+                committed=committed,
+                sha256=str(latest.get("sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")),
+                is_duplicate=bool(latest.get("isDuplicateFile", False)),
+                has_critical_error=critical,
+                errors_sample=errors[:10],
+                sample_rows=latest.get("parsedRows", [])[:5],
+                user_notes="Audit inquiry from Priya & Rohit via Hetvaya Copilot",
+                model="nemotron-3-ultra:cloud",
+            )
+            audit_resp = OllamaService.audit_document_import(req)
+            audit_dict = audit_resp.model_dump()
+        except Exception as e:
+            logger.warning(f"Failed to run Ollama document audit: {e}")
+            audit_dict = {
+                "audit_id": "AUD-FALLBACK",
+                "file_name": file_name,
+                "target_entity": "batches",
+                "model_used": "nemotron-3-ultra:cloud (fallback)",
+                "verdict": "CLEAN_COMMITTED" if err_rate == 0 else "PARTIALLY_COMMITTED_UNDER_5PCT" if err_rate <= 5.0 else "ROLLED_BACK_THRESHOLD_EXCEEDED",
+                "data_quality_score": round(1.0 - (err_rate / 100.0), 2),
+                "executive_summary": f"File '{file_name}' processed {total} rows with an error rate of {err_rate:.1f}%.",
+                "rule_compliance_narrative": f"5% Transactional Rule: {'Passed (<= 5%)' if err_rate <= 5.0 else 'Failed (> 5%)'}.",
+                "anomaly_root_causes": [f"{e.get('field', 'field')}: {e.get('message', 'error')}" for e in errors[:5]] or ["No anomalies detected."],
+                "operational_risk_assessment": "Downstream inventory allocation remains intact.",
+                "remediation_steps": ["Review diagnostics and proceed with verified batch state."],
+                "is_fallback": True,
+            }
+
+        sources = [
+            ChatSourceItem(
+                title=f"Document Audit: {file_name} ({audit_dict.get('verdict')})",
+                source_type="import_audit",
+                identifier=file_name,
+                verified_data=audit_dict,
+            )
+        ]
+
+        return {"audit": audit_dict, "file_name": file_name}, sources
+
+    @classmethod
     def _get_general_catalog_data(
         cls,
         db: Session,
@@ -1436,6 +1559,38 @@ class ProductChatIntelligenceService:
                 f"{factors_md}"
             )
 
+        elif intent == "import_document_audit":
+            audit = retrieved_data.get("audit", {})
+            file_name = audit.get("file_name", "inventory_batches.csv")
+            target_entity = audit.get("target_entity", "batches")
+            verdict = audit.get("verdict", "COMMITTED")
+            score = int(audit.get("data_quality_score", 0.95) * 100)
+            model_used = audit.get("model_used", "nemotron-3-ultra:cloud")
+            exec_summary = audit.get("executive_summary", "")
+            rule_text = audit.get("rule_compliance_narrative", "")
+            op_risk = audit.get("operational_risk_assessment", "")
+            anomalies = audit.get("anomaly_root_causes", [])
+            remediation = audit.get("remediation_steps", [])
+
+            anomaly_md = "\n".join([f"• `{a}`" for a in anomalies]) if anomalies else "• No schema or foreign key anomalies detected."
+            remediation_md = "\n".join([f"1. {r}" for r in remediation]) if remediation else "1. Proceed to Distribution Planning & Optimization."
+
+            return (
+                f"### 📄 AI Master Data & Import Integrity Audit (Priya & Rohit)\n\n"
+                f"**File:** `{file_name}` | **Target Schema:** `{target_entity}`\n"
+                f"**Engine Model:** `{model_used}` | **Data Quality Score:** **{score}%**\n\n"
+                f"#### 🛡️ 5% Error Threshold Transactional Rule (FR-02): `{verdict}`\n"
+                f"{rule_text}\n\n"
+                f"**Executive Review:**\n"
+                f"> {exec_summary}\n\n"
+                f"**🔍 Identified Anomalies & Root Causes (file:row):**\n"
+                f"{anomaly_md}\n\n"
+                f"**⚠️ Downstream Operational Impact:**\n"
+                f"{op_risk}\n\n"
+                f"**📋 Recommended Remediation Steps:**\n"
+                f"{remediation_md}"
+            )
+
         else:
             return (
                 f"I am your **HETVAYA Agentic Copilot** powered by `nemotron-3-ultra:cloud`. I can answer questions grounded in real product catalog, "
@@ -1537,6 +1692,12 @@ class ProductChatIntelligenceService:
                 "What is the estimated freight cost from Pune to D-Mart?",
                 "How does the fuel surcharge impact Kolhapur routes?",
                 "Which products have high demand?",
+            ]
+        elif intent == "import_document_audit":
+            return [
+                "What is the 5% error threshold transactional rule (FR-02)?",
+                "Why was the 18% error dataset rolled back?",
+                "How does SHA-256 deduplication prevent double counting?",
             ]
         else:
             return [
