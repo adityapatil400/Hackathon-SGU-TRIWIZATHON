@@ -95,46 +95,46 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-indigo-500/40 rounded-2xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-in fade-in">
+      <div className="relative w-full max-w-2xl bg-white border border-[#E7E5E4] rounded-2xl shadow-2xl overflow-hidden my-8">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 border-b border-indigo-900/50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+        <div className="px-6 py-4 bg-[#F8F7F5] border-b border-[#E7E5E4] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-[#292524]">
                 3-Minute Hackathon Demo Script (Section 20)
               </h3>
-              <p className="text-xs text-indigo-300/80">Step-by-step evaluator guide to Problem Statement 2</p>
+              <p className="text-xs text-[#78716C]">Step-by-step evaluator guide to Problem Statement 2</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-white hover:bg-[#F8F7F5] border border-[#E7E5E4] text-[#78716C] hover:text-[#292524] flex items-center justify-center transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Step List */}
-        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 space-y-3.5 max-h-[75vh] overflow-y-auto">
           {demoSteps.map(step => (
             <div
               key={step.step}
-              className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group"
+              className="p-4 rounded-xl bg-white border border-[#E7E5E4] hover:border-[#8B5E3C]/50 hover:shadow-xs transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group"
             >
               <div className="space-y-1 max-w-md">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-[11px] flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-[#E9D8C8] text-[#8B5E3C] font-bold text-[11px] flex items-center justify-center">
                     {step.step}
                   </span>
-                  <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">
+                  <h4 className="text-xs font-bold text-[#292524] group-hover:text-[#8B5E3C] transition-colors">
                     {step.title}
                   </h4>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                <p className="text-[11px] text-[#78716C] leading-relaxed pl-7">
                   {step.desc}
                 </p>
               </div>
@@ -144,7 +144,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({
                   step.action();
                   onClose();
                 }}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all flex items-center gap-1.5 shrink-0 ml-7 sm:ml-0"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition-all flex items-center gap-1.5 shrink-0 ml-7 sm:ml-0"
               >
                 <span>{step.actionLabel}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -154,11 +154,11 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-          <span>HETVAYA v1.5 • FMCG Traditional Trade Intelligence</span>
+        <div className="px-6 py-4 bg-[#F8F7F5] border-t border-[#E7E5E4] flex items-center justify-between text-xs text-[#78716C]">
+          <span>FlowGrid Enterprise • FMCG Trade Distribution Intelligence</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+            className="px-4 py-2 font-semibold text-[#292524] hover:bg-[#E7E5E4]/60 bg-white border border-[#E7E5E4] rounded-lg transition-colors"
           >
             Close Guide
           </button>

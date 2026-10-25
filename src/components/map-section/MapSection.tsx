@@ -23,11 +23,11 @@ const VALUE_LABEL = "Forecast weekly demand (units, P50)";
 const CATEGORY_LABEL = "Channel";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Modern Trade": "#6366f1", // indigo-500
-  Distributor: "#10b981", // emerald-500
-  Kirana: "#f59e0b", // amber-500
+  "Modern Trade": "#2563EB", // blue accent
+  Distributor: "#15803D", // green success
+  Kirana: "#8B5E3C", // brown accent
 };
-const FALLBACK_COLORS = ["#06b6d4", "#ec4899", "#8b5cf6", "#84cc16", "#f97316"];
+const FALLBACK_COLORS = ["#2563EB", "#8B5E3C", "#D97706", "#15803D", "#DC2626"];
 
 const numberFormat = new Intl.NumberFormat("en-IN");
 const formatValue = (n: number) => numberFormat.format(n);
@@ -165,26 +165,43 @@ export function MapSection() {
   }, []);
 
   return (
-    <Card>
+    <Card className="bg-white border-[#E7E5E4] shadow-xs text-[#292524]">
       <CardHeader>
-        <CardTitle className="text-base">Retailer demand map</CardTitle>
-        <CardDescription>
-          {VALUE_LABEL} by store. Hover a row to find it on the map; click to zoom in.
-        </CardDescription>
-        {categories.length > 0 && (
-          <ul className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs">
-            {categories.map((c) => (
-              <li key={c} className="flex items-center gap-1.5">
-                <span
-                  className="size-2.5 rounded-full"
-                  style={{ backgroundColor: ranked.find((r) => r.category === c)?.color }}
-                  aria-hidden
-                />
-                {c}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base font-bold text-[#292524]">
+                Distribution Network & Retailer Demand Map
+              </CardTitle>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] border border-emerald-200">
+                🛰️ Satellite View
+              </span>
+            </div>
+            <CardDescription className="text-xs text-[#78716C] mt-0.5">
+              {VALUE_LABEL} across Maharashtra warehouses, supply corridors, and retail kiranas. Switch between Satellite, Hybrid, and Map modes.
+            </CardDescription>
+          </div>
+        </div>
+        <ul className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 pt-1.5 text-xs">
+          <li className="flex items-center gap-1.5 font-medium text-[#292524]">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#8B5E3C] border border-white" aria-hidden />
+            <span>Warehouse Hubs (3)</span>
+          </li>
+          <li className="flex items-center gap-1.5 font-medium text-[#292524]">
+            <span className="w-4 h-0.5 bg-[#38BDF8] rounded" aria-hidden />
+            <span>Supply Corridors</span>
+          </li>
+          {categories.map((c) => (
+            <li key={c} className="flex items-center gap-1.5">
+              <span
+                className="size-2.5 rounded-full"
+                style={{ backgroundColor: ranked.find((r) => r.category === c)?.color }}
+                aria-hidden
+              />
+              {c}
+            </li>
+          ))}
+        </ul>
       </CardHeader>
 
       <CardContent>

@@ -504,9 +504,13 @@ export const App: React.FC = () => {
   const currentKirana = retailers.find(r => r.id === 'RET-GAN') || retailers[0];
 
   return (
+<<<<<<< Updated upstream
     <div className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-200 ${
       theme === 'day' ? 'theme-day bg-[#f8f6f0] text-[#0a192f]' : 'theme-night bg-slate-950 text-slate-100'
     }`}>
+=======
+    <div className="min-h-screen bg-[#F8F7F5] text-[#292524] flex flex-col lg:flex-row">
+>>>>>>> Stashed changes
       {/* Left Sidebar Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -526,6 +530,7 @@ export const App: React.FC = () => {
       {/* Main Content Column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden">
         {/* Top Context Sub-Bar (Desktop) */}
+<<<<<<< Updated upstream
         <div className={`hidden lg:flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-6 py-2.5 border-b text-xs transition-colors duration-200 ${
           theme === 'day'
             ? 'bg-white/95 border-slate-200/90 text-slate-700 shadow-sm'
@@ -533,6 +538,11 @@ export const App: React.FC = () => {
         }`}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className={`font-semibold capitalize ${theme === 'day' ? 'text-[#0a192f]' : 'text-slate-200'}`}>
+=======
+        <div className="hidden lg:flex items-center justify-between px-6 py-2.5 bg-white border-b border-[#E7E5E4] text-xs text-[#78716C] shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-[#292524] capitalize">
+>>>>>>> Stashed changes
               {activeTab === 'plans' ? 'Allocation Plan & AI Engine' :
                activeTab === 'forecast' ? 'Demand Forecasting Intelligence' :
                activeTab === 'map' ? 'Demand Map Intelligence' :
@@ -543,6 +553,7 @@ export const App: React.FC = () => {
                activeTab === 'import' ? 'Master Data Import Studio' :
                'System Health & Monitoring'}
             </span>
+<<<<<<< Updated upstream
             <span className="text-slate-400">•</span>
             <span className="text-slate-500">{PLAN_HORIZON_DAYS}-day planning horizon</span>
             <span className="text-slate-400">•</span>
@@ -574,6 +585,18 @@ export const App: React.FC = () => {
             </button>
             <span className="text-slate-400">|</span>
             <span className="text-slate-500">Solve Time: <strong className="text-indigo-600 dark:text-indigo-300">&lt;1ms</strong></span>
+=======
+            <span className="text-[#E7E5E4]">•</span>
+            <span className="text-[#78716C] font-medium">Weekly Cycle W43 (Oct 2026)</span>
+            <span className="text-[#E7E5E4]">•</span>
+            <span className="text-[#8B5E3C] font-mono text-[11px] font-semibold">Network: Maharashtra (Pune Hub, Satara, Kolhapur)</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-[11px]">
+            <span className="text-[#78716C]">Avg Kirana Margin: <strong className="text-[#15803D]">3–5%</strong></span>
+            <span className="text-[#E7E5E4]">•</span>
+            <span className="text-[#78716C]">Solve Time: <strong className="text-[#2563EB]">{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong></span>
+>>>>>>> Stashed changes
           </div>
         </div>
 
@@ -592,6 +615,7 @@ export const App: React.FC = () => {
               products={products}
               warehouses={warehouses}
               retailers={retailers}
+              batches={batches}
               isGenerating={isGenerating}
             />
           )}
@@ -654,12 +678,12 @@ export const App: React.FC = () => {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-900 bg-slate-950/80 py-5 text-xs text-slate-500 mt-auto">
+        <footer className="border-t border-[#E7E5E4] bg-white py-5 text-xs text-[#78716C] mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p>
-              HETVAYA Distribution Intelligence &amp; Inventory Optimization Engine • Problem Statement 2 (FMCG)
+            <p className="font-medium">
+              FlowGrid Distribution Intelligence &amp; Inventory Optimization Engine • Problem Statement 2 (FMCG)
             </p>
-            <p className="text-[11px] text-slate-600">
+            <p className="text-[11px] text-[#78716C]">
               Greedy Marginal Allocation • Scikit-learn Quantile ML • React 19 • Offline Resilient Event Queue
             </p>
             <a href="/" className="text-indigo-300 hover:text-white transition-colors">

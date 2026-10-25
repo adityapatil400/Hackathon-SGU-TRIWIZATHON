@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+<<<<<<< Updated upstream
 @font-face {
   font-family: 'Parmyo';
   src: url('/fonts/Parmyo.otf') format('opentype'),
@@ -13,62 +14,102 @@
 
 @custom-variant dark (&:is(.dark *));
 
+=======
+>>>>>>> Stashed changes
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+<<<<<<< Updated upstream
     --font-parmyo: 'Parmyo', var(--font-sans);
+=======
+
+    /* FlowGrid Theme Color Palette */
+    --color-main-bg: #FFFFFF;
+    --color-page-bg: #F8F7F5;
+    --color-card-bg: #FFFFFF;
+    --color-text-primary: #292524;
+    --color-text-secondary: #78716C;
+    --color-brown-accent: #8B5E3C;
+    --color-light-brown: #E9D8C8;
+    --color-blue-accent: #2563EB;
+    --color-light-blue-bg: #EFF6FF;
+    --color-action-red: #DC2626;
+    --color-action-red-hover: #B91C1C;
+    --color-success: #15803D;
+    --color-warning: #D97706;
+    --color-error: #DC2626;
+    --color-border: #E7E5E4;
+
+    /* Shadcn token mappings for light enterprise theme */
+    --background: #F8F7F5;
+    --foreground: #292524;
+    --card: #FFFFFF;
+    --card-foreground: #292524;
+    --popover: #FFFFFF;
+    --popover-foreground: #292524;
+    --primary: #DC2626;
+    --primary-foreground: #FFFFFF;
+    --secondary: #FFFFFF;
+    --secondary-foreground: #292524;
+    --muted: #F8F7F5;
+    --muted-foreground: #78716C;
+    --accent: #E9D8C8;
+    --accent-foreground: #8B5E3C;
+    --destructive: #DC2626;
+    --destructive-foreground: #FFFFFF;
+    --border: #E7E5E4;
+    --input: #E7E5E4;
+    --ring: #8B5E3C;
+    --radius: 0.75rem;
+>>>>>>> Stashed changes
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #030712;
-    color: #f8fafc;
+    background-color: #F8F7F5;
+    color: #292524;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   * {
-    @apply border-border outline-ring/50;
+    border-color: #E7E5E4;
   }
+
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
   }
+
   .maplibregl-popup-content {
-    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
   }
   .maplibregl-popup-tip {
-    @apply hidden!;
-  }
-  .maplibregl-ctrl-attrib {
-    @apply bg-background! text-muted-foreground! border-border! rounded-md! border! shadow-sm!;
-  }
-  .maplibregl-ctrl-attrib a {
-    @apply text-muted-foreground!;
-  }
-  .maplibregl-ctrl-attrib a:hover {
-    @apply text-foreground!;
-  }
-  .maplibregl-ctrl-attrib-button {
-    @apply bg-transparent! dark:invert;
+    display: none !important;
   }
 }
 
-/* Custom modern scrollbar */
+/* Custom Light Enterprise Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: #F8F7F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: #D6D3D1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.6);
+  background: #A8A29E;
 }
 
+<<<<<<< Updated upstream
 .font-parmyo {
   font-family: 'Parmyo', var(--font-sans);
   letter-spacing: 0.02em;
@@ -81,37 +122,131 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+=======
+/* FlowGrid Cards & Panels */
+.glass-panel {
+  background: #FFFFFF;
+  border: 1px solid #E7E5E4;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+>>>>>>> Stashed changes
 }
 
 .glass-panel-hover {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-panel-hover:hover {
-  background: rgba(30, 41, 59, 0.85);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 15px -3px rgba(99, 102, 241, 0.15);
+  background: #FFFFFF;
+  border-color: #8B5E3C;
+  box-shadow: 0 4px 12px -2px rgba(139, 94, 60, 0.12), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
 }
 
-.glow-indigo {
-  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35);
+/* Button System */
+.btn-primary {
+  background-color: #DC2626;
+  color: #FFFFFF;
+  font-weight: 700;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: #B91C1C;
+}
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px rgba(220, 38, 38, 0.35);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
+.btn-secondary {
+  background-color: #FFFFFF;
+  border: 1px solid #8B5E3C;
+  color: #292524;
+  font-weight: 600;
+  transition: all 0.15s ease-in-out;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(233, 216, 200, 0.4);
+  color: #8B5E3C;
+}
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px rgba(139, 94, 60, 0.35);
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.glow-amber {
-  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35);
+.btn-info {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+  font-weight: 600;
+  transition: all 0.15s ease-in-out;
+}
+.btn-info:hover:not(:disabled) {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+  border-color: #93C5FD;
+}
+.btn-info:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px rgba(37, 99, 235, 0.35);
+}
+.btn-info:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* Pulse animation for live sync status */
+/* Semantic Badges */
+.badge-brown {
+  background-color: rgba(233, 216, 200, 0.7);
+  color: #8B5E3C;
+  border: 1px solid rgba(139, 94, 60, 0.3);
+}
+
+.badge-blue {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.badge-red {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.badge-green {
+  background-color: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.badge-amber {
+  background-color: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.badge-neutral {
+  background-color: #F8F7F5;
+  color: #78716C;
+  border: 1px solid #E7E5E4;
+}
+
+/* Subtle pulse animation */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.96); }
+  50% { opacity: 0.7; transform: scale(0.97); }
 }
 
 .animate-pulse-subtle {
   animation: pulse-subtle 2s infinite ease-in-out;
+<<<<<<< Updated upstream
 }
 
 /* ==========================================================================
@@ -320,4 +455,6 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+=======
+>>>>>>> Stashed changes
 }

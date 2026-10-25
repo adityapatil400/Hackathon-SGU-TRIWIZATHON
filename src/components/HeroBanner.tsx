@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import React, { useState } from 'react';
 import {
   ArrowDownRight,
@@ -19,6 +20,11 @@ import {
 import { TerraDusk } from './TerraDusk';
 import { BENCHMARK_COMPARISONS } from '../data/mockData';
 import { PLAN_HORIZON_DAYS, SYNTHETIC_SALES_PANEL } from '../data/demoScope';
+=======
+import React from 'react';
+import { ArrowDownRight, ShieldCheck, Zap, TrendingDown, Clock, PackageCheck } from 'lucide-react';
+import { BENCHMARK_COMPARISONS, BENCHMARK_SOLVE_TIME } from '../data/mockData';
+>>>>>>> Stashed changes
 
 interface HeroBannerProps {
   onQuickGenerate: () => void;
@@ -37,6 +43,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
   const stockoutDisplay = `${BENCHMARK_COMPARISONS.stockoutReductionVsCurrentPct}%`;
   const wasteDisplay = `${BENCHMARK_COMPARISONS.wasteReductionVsCurrentPct}%`;
+<<<<<<< Updated upstream
   const freightDisplay = BENCHMARK_COMPARISONS.freightReductionVsCurrentPct < 0
     ? `${BENCHMARK_COMPARISONS.freightReductionVsCurrentPct}%`
     : `+${BENCHMARK_COMPARISONS.freightReductionVsCurrentPct}%`;
@@ -182,10 +189,60 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 {BENCHMARK_COMPARISONS.stockoutChangeVsTextbookPct}%
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">Stockout Elimination</div>
+=======
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-white border border-[#E7E5E4] p-6 md:p-8 mb-8 shadow-xs">
+      {/* Subtle light background accent */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-[#EFF6FF]/60 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#E9D8C8]/30 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+              Indian FMCG & Kirana Traditional Trade
+            </span>
+            <span className="text-xs text-[#78716C] flex items-center gap-1 font-medium">
+              <Clock className="w-3.5 h-3.5 text-[#2563EB]" /> Weekly Cycle W43
+            </span>
+          </div>
+
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#292524] tracking-tight leading-tight">
+            AI Marginal-Value Allocation & Demand Intelligence
+          </h1>
+
+          <p className="mt-2 text-sm md:text-base text-[#78716C] leading-relaxed">
+            Eliminating the kirana replenishment trap for 13M+ stores where 3–5% distributor margins mean one expired case wipes out the profit of 20+ sales. Optimized via greedy marginal-value knapsack allocation with arrival shelf-life gating.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onQuickGenerate}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] shadow-xs transition-all cursor-pointer select-none"
+              title="Trigger immediate greedy marginal-value allocation run"
+            >
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>Quick Run Optimization</span>
+            </button>
+            <div className="flex items-center gap-1.5 text-xs text-[#15803D] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Arrival Shelf-Life Verified (≥70% Min)</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-3 py-1 rounded-full font-medium">
+              <Zap className="w-3.5 h-3.5" />
+              <span>Solve Time: {BENCHMARK_SOLVE_TIME.p95}ms p95 (0 Violations)</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-[#8B5E3C] bg-[#E9D8C8]/60 border border-[#8B5E3C]/30 px-3 py-1 rounded-full font-medium">
+              <PackageCheck className="w-3.5 h-3.5" />
+              <span>Explainable Marginal Reason Cards</span>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
 
+<<<<<<< Updated upstream
         {/* Right Column: 3D Interactive Rotating Earth (5 Cols) */}
         <div className="relative flex min-w-0 w-full flex-col items-center justify-center xl:col-span-5">
           {/* Earth Container with Ambient Shadow & Glow Ring */}
@@ -268,11 +325,46 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <span>{earthSpeed === 0 ? 'Paused' : `${(earthSpeed / 5).toFixed(1)}x`}</span>
               </button>
             </div>
+=======
+        {/* Quick KPI Stat Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+          {/* Stockout reduction */}
+          <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs text-[#15803D] font-bold">
+              <span>Stockouts</span>
+              <ArrowDownRight className="w-4 h-4" />
+            </div>
+            <div className="mt-1 text-2xl font-black text-[#15803D] tracking-tight">{stockoutDisplay}</div>
+            <div className="text-[11px] text-[#78716C] font-medium">vs Current (simulated)</div>
+          </div>
+
+          {/* Waste reduction */}
+          <div className="bg-white p-4 rounded-xl border border-blue-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs text-[#2563EB] font-bold">
+              <span>Expiry & Waste</span>
+              <TrendingDown className="w-4 h-4" />
+            </div>
+            <div className="mt-1 text-2xl font-black text-[#2563EB] tracking-tight">{wasteDisplay}</div>
+            <div className="text-[11px] text-[#78716C] font-medium">Total waste reduction</div>
+          </div>
+
+          {/* vs Textbook */}
+          <div className="bg-white p-4 rounded-xl border border-[#8B5E3C]/30 shadow-xs col-span-2 sm:col-span-1 flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs text-[#8B5E3C] font-bold">
+              <span>vs Textbook</span>
+              <ArrowDownRight className="w-4 h-4" />
+            </div>
+            <div className="mt-1 text-2xl font-black text-[#8B5E3C] tracking-tight">{BENCHMARK_COMPARISONS.stockoutChangeVsTextbookPct}%</div>
+            <div className="text-[11px] text-[#78716C] font-medium">Stockouts (simulated)</div>
+>>>>>>> Stashed changes
           </div>
         </div>
       </div>
     </section>
   );
 };
+<<<<<<< Updated upstream
 
 export default HeroBanner;
+=======
+>>>>>>> Stashed changes

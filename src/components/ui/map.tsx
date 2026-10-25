@@ -45,9 +45,107 @@ function loadMapLibre() {
 
 if (typeof window !== "undefined") loadMapLibre().catch(() => {});
 
+type MapTypeId = "satellite" | "hybrid" | "roadmap" | "map";
+
+const GOOGLE_MAPS_STYLES: Record<"satellite" | "hybrid" | "roadmap", MapLibreGL.StyleSpecification> = {
+  satellite: {
+    version: 8,
+    sources: {
+      "google-satellite": {
+        type: "raster",
+        tiles: [
+          "https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+          "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+          "https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+          "https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        ],
+        tileSize: 256,
+        attribution: "© Google Maps Satellite Imagery",
+        maxzoom: 22,
+      },
+    },
+    layers: [
+      {
+        id: "google-satellite-bg",
+        type: "background",
+        paint: { "background-color": "#111827" },
+      },
+      {
+        id: "google-satellite-layer",
+        type: "raster",
+        source: "google-satellite",
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  },
+  hybrid: {
+    version: 8,
+    sources: {
+      "google-hybrid": {
+        type: "raster",
+        tiles: [
+          "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+          "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+          "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+          "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        ],
+        tileSize: 256,
+        attribution: "© Google Maps Hybrid Imagery",
+        maxzoom: 22,
+      },
+    },
+    layers: [
+      {
+        id: "google-hybrid-bg",
+        type: "background",
+        paint: { "background-color": "#111827" },
+      },
+      {
+        id: "google-hybrid-layer",
+        type: "raster",
+        source: "google-hybrid",
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  },
+  roadmap: {
+    version: 8,
+    sources: {
+      "google-roadmap": {
+        type: "raster",
+        tiles: [
+          "https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+          "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+          "https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+          "https://mt3.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        ],
+        tileSize: 256,
+        attribution: "© Google Maps",
+        maxzoom: 22,
+      },
+    },
+    layers: [
+      {
+        id: "google-roadmap-bg",
+        type: "background",
+        paint: { "background-color": "#f8f9fa" },
+      },
+      {
+        id: "google-roadmap-layer",
+        type: "raster",
+        source: "google-roadmap",
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  },
+};
+
 const defaultStyles = {
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  dark: GOOGLE_MAPS_STYLES.satellite,
+  light: GOOGLE_MAPS_STYLES.satellite,
 };
 
 // A tile-less, dependency-free style with a transparent background. Use it for
@@ -233,6 +331,11 @@ type MapProps = {
    * to enable controlled mode where the map viewport is driven by your state.
    */
   onViewportChange?: (viewport: MapViewport) => void;
+  /**
+   * Google Maps type ID: "satellite" (default), "hybrid", or "roadmap" / "map".
+   * Configures the visual style to real Google Maps imagery or road map.
+   */
+  mapTypeId?: MapTypeId;
   /** Show a loading indicator on the map */
   loading?: boolean;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
@@ -264,6 +367,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     children,
     className,
     theme: themeProp,
+    mapTypeId,
     styles,
     blank = false,
     projection,
@@ -293,8 +397,14 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const stableStyles = useStableValue(styles);
 
   const mapStyles = useMemo(() => {
+    // If explicit mapTypeId is provided, use Google Maps style
+    if (mapTypeId) {
+      const key = (mapTypeId === "map" ? "roadmap" : mapTypeId) as keyof typeof GOOGLE_MAPS_STYLES;
+      const selected = GOOGLE_MAPS_STYLES[key] ?? GOOGLE_MAPS_STYLES.satellite;
+      return { dark: selected, light: selected };
+    }
     // Explicit styles win. Otherwise `blank` opts into the transparent
-    // tile-less basemap; with neither, fall back to the Carto defaults.
+    // tile-less basemap; with neither, fall back to the Google Maps satellite defaults.
     if (stableStyles) {
       return {
         dark: stableStyles.dark ?? defaultStyles.dark,
@@ -305,7 +415,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       return { dark: blankMapStyle, light: blankMapStyle };
     }
     return defaultStyles;
-  }, [stableStyles, blank]);
+  }, [mapTypeId, stableStyles, blank]);
 
   const initOptionsRef = useRef({ props, viewport, resolvedTheme, mapStyles });
   initOptionsRef.current = { props, viewport, resolvedTheme, mapStyles };
@@ -2717,11 +2827,13 @@ export {
   MapArc,
   MapGeoJSON,
   MapClusterLayer,
+  GOOGLE_MAPS_STYLES,
 };
 
 export type {
   MapRef,
   MapViewport,
+  MapTypeId,
   MapStyleOption,
   MapArcDatum,
   MapArcEvent,

@@ -35,24 +35,24 @@ export const ShelfLifeIndicator: React.FC<ShelfLifeIndicatorProps> = ({
   const config = {
     HEALTHY: {
       label: 'Healthy',
-      badgeClass: 'text-emerald-300 bg-emerald-950/50 border-emerald-500/40',
-      barColor: 'bg-emerald-400',
+      badgeClass: 'text-[#15803D] bg-emerald-50 border-emerald-200',
+      barColor: 'bg-[#15803D]',
       icon: CheckCircle2,
-      iconColor: 'text-emerald-400',
+      iconColor: 'text-[#15803D]',
     },
     WARNING: {
       label: 'Near Min',
-      badgeClass: 'text-amber-300 bg-amber-950/50 border-amber-500/40',
-      barColor: 'bg-amber-400',
+      badgeClass: 'text-[#D97706] bg-amber-50 border-amber-200',
+      barColor: 'bg-[#D97706]',
       icon: Clock,
-      iconColor: 'text-amber-400',
+      iconColor: 'text-[#D97706]',
     },
     CRITICAL: {
       label: 'Critical Risk',
-      badgeClass: 'text-rose-300 bg-rose-950/60 border-rose-500/50 font-bold',
-      barColor: 'bg-rose-500',
+      badgeClass: 'text-[#DC2626] bg-red-50 border-red-200 font-bold',
+      barColor: 'bg-[#DC2626]',
       icon: AlertTriangle,
-      iconColor: 'text-rose-400',
+      iconColor: 'text-[#DC2626]',
     },
   }[health];
 
@@ -84,53 +84,53 @@ export const ShelfLifeIndicator: React.FC<ShelfLifeIndicatorProps> = ({
       </div>
 
       {/* Mini Progress Bar with 70% threshold tick */}
-      <div className="w-20 sm:w-24 h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden relative">
+      <div className="w-20 sm:w-24 h-1.5 bg-[#E7E5E4] rounded-full mt-1.5 overflow-hidden relative">
         <div
           className={`h-full ${config.barColor} transition-all duration-300 rounded-full`}
           style={{ width: `${barWidth}%` }}
         />
         {/* Threshold marker tick at 70% */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-slate-400/80 z-10"
+          className="absolute top-0 bottom-0 w-0.5 bg-[#78716C] z-10"
           style={{ left: `${minThresholdPct}%` }}
           title={`Kirana SLA minimum limit (${minThresholdPct}%)`}
         />
       </div>
 
       {/* Subtext */}
-      <span className="text-[9px] text-slate-400 font-medium mt-0.5">
+      <span className="text-[9px] text-[#78716C] font-medium mt-0.5">
         &ge; {minThresholdPct}% min SLA
       </span>
 
       {/* Hover / Focus Tooltip */}
       {showTooltip && (
-        <div className="absolute bottom-full mb-2 z-50 w-64 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl text-left pointer-events-none animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-white mb-1">
-            <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="absolute bottom-full mb-2 z-50 w-64 p-3 bg-white border border-[#E7E5E4] rounded-xl shadow-xl text-left pointer-events-none animate-in fade-in zoom-in-95 duration-150 text-[#292524]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#292524] mb-1">
+            <HelpCircle className="w-3.5 h-3.5 text-[#2563EB]" />
             <span>Remaining Shelf Life on Arrival</span>
           </div>
-          <p className="text-[11px] text-slate-300 leading-relaxed mb-2">
+          <p className="text-[11px] text-[#78716C] leading-relaxed mb-2">
             Represents the ratio of usable shelf life remaining upon store delivery:
-            <span className="block font-mono text-[10px] text-indigo-300 mt-0.5">
+            <span className="block font-mono text-[10px] text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] p-1 rounded mt-1">
               (Expiry Date − Arrival Date) ÷ Total Shelf Life
             </span>
           </p>
-          <div className="space-y-1 text-[10px] border-t border-slate-800 pt-1.5">
-            <div className="flex justify-between text-slate-300">
+          <div className="space-y-1 text-[10px] border-t border-[#E7E5E4] pt-1.5">
+            <div className="flex justify-between text-[#78716C]">
               <span>Arrival Value:</span>
-              <span className="font-bold text-white font-mono">{normalized}%</span>
+              <span className="font-bold text-[#292524] font-mono">{normalized}%</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-[#78716C]">
               <span>Kirana Rule:</span>
-              <span className="font-semibold text-emerald-400">&ge; {minThresholdPct}% Minimum</span>
+              <span className="font-semibold text-[#15803D]">&ge; {minThresholdPct}% Minimum</span>
             </div>
             {daysRemaining !== undefined && (
-              <div className="flex justify-between text-slate-300">
+              <div className="flex justify-between text-[#78716C]">
                 <span>Days Remaining:</span>
-                <span className="font-mono text-amber-300">{daysRemaining} days</span>
+                <span className="font-mono text-[#D97706] font-semibold">{daysRemaining} days</span>
               </div>
             )}
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-[#78716C]">
               <span>Condition:</span>
               <span className={`font-bold ${config.iconColor}`}>{config.label}</span>
             </div>

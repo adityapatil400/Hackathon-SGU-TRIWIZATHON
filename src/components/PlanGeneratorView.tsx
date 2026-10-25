@@ -8,7 +8,6 @@ import {
   HelpCircle,
   ShieldAlert,
   Boxes,
-  Truck,
   Building,
   Store,
   Calendar,
@@ -18,17 +17,14 @@ import {
   ChevronRight,
   FilterX,
   X,
-  Sparkles,
-  Layers,
-  ChevronDown,
-  Info
+  ArrowUpDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { PlanRun, AllocationLine, Product, Warehouse, Retailer } from '../types';
+import { PlanRun, AllocationLine, Product, Warehouse, Retailer, InventoryBatch } from '../types';
 import { ReasonCardModal } from './ReasonCardModal';
 import { ShelfLifeIndicator, normalizeShelfLifePct } from './plan/ShelfLifeIndicator';
 import { PlanKpiCards } from './plan/PlanKpiCards';
-import { PlanToolbar, PlanFilterState, SortOption, ShelfLifeFilter } from './plan/PlanToolbar';
+import { PlanToolbar, PlanFilterState } from './plan/PlanToolbar';
 import { PlanCardItem } from './plan/PlanCardItem';
 import { ApproveAllModal } from './plan/ApproveAllModal';
 
@@ -43,6 +39,7 @@ interface PlanGeneratorViewProps {
   products: Product[];
   warehouses: Warehouse[];
   retailers: Retailer[];
+  batches?: InventoryBatch[];
   isGenerating: boolean;
 }
 
@@ -57,6 +54,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
   products,
   warehouses,
   retailers,
+  batches,
   isGenerating,
 }) => {
   // Modals & Popovers
@@ -175,7 +173,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
       particleCount: 90,
       spread: 75,
       origin: { y: 0.6 },
-      colors: ['#6366f1', '#10b981', '#38bdf8', '#fbbf24'],
+      colors: ['#DC2626', '#8B5E3C', '#2563EB', '#15803D'],
     });
     onApproveAll();
     setIsApproveAllOpen(false);
@@ -268,6 +266,13 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
           return nameA.localeCompare(nameB);
         });
         break;
+      case 'warehouse_asc':
+        list.sort((a, b) => {
+          const whA = warehouses.find(w => w.id === a.warehouseId)?.city || a.warehouseId;
+          const whB = warehouses.find(w => w.id === b.warehouseId)?.city || b.warehouseId;
+          return whA.localeCompare(whB);
+        });
+        break;
       default:
         break;
     }
@@ -288,19 +293,19 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Action Console */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-              <Boxes className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-xl font-black text-[#292524] tracking-tight flex items-center gap-2">
+              <Boxes className="w-5 h-5 text-[#8B5E3C]" />
               <span>Distribution Allocation Matrix</span>
             </h2>
             {planRun && (
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-mono ${
                   planRun.solverStatus !== 'TIMEOUT'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    ? 'bg-emerald-50 text-[#15803D] border border-emerald-200'
+                    : 'bg-amber-50 text-[#D97706] border border-amber-200'
                 }`}
               >
                 {planRun.solverStatus}{planRun.solveSeconds !== undefined
@@ -309,17 +314,18 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+          <p className="text-xs text-[#78716C] mt-1.5 leading-relaxed">
             Greedy Marginal-Value Allocation • Value-Tier Objective • Hard Constraints: Zero Negative Stock, Shelf-Life on Arrival &ge; 70%, Kirana Storage Limits
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          {/* Primary Action Button: Red */}
           <button
             type="button"
             onClick={() => onGeneratePlan(false)}
             disabled={isGenerating}
-            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50 select-none cursor-pointer"
+            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-all shadow-xs disabled:opacity-50 select-none cursor-pointer"
           >
             {isGenerating ? (
               <>
@@ -336,23 +342,25 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
           {planRun && planRun.lines.length > 0 && (
             <>
+              {/* Primary / Attention Action Button: Red */}
               <button
                 type="button"
                 onClick={() => setIsApproveAllOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/30 select-none cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-all shadow-xs select-none cursor-pointer"
                 title="Review and approve all recommended lines"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Approve All ({planRun.lines.length} Lines)</span>
               </button>
 
+              {/* Secondary Action Button: White with brown border */}
               <button
                 type="button"
                 onClick={onSimulateStaleConflict}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all select-none cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-semibold text-xs text-[#292524] bg-white hover:bg-[#E9D8C8]/50 border border-[#8B5E3C] transition-all select-none cursor-pointer"
                 title="Simulate 409 conflict when warehouse inventory changes during planner review (FR-11, T9)"
               >
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <AlertTriangle className="w-4 h-4 text-[#D97706]" />
                 <span className="hidden sm:inline">Simulate 409 Conflict</span>
                 <span className="sm:hidden">409 Test</span>
               </button>
@@ -363,14 +371,14 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
       {/* Action Feedback Notification Banner */}
       {actionFeedback && (
-        <div className="p-3.5 rounded-xl bg-indigo-950/70 border border-indigo-500/40 flex items-center justify-between text-xs text-indigo-200 shadow-lg animate-in slide-in-from-top-2 duration-150">
+        <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-between text-xs text-[#1E40AF] shadow-xs animate-in slide-in-from-top-2 duration-150">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#2563EB] shrink-0" />
             <span className="font-semibold">{actionFeedback}</span>
           </div>
           <button
             onClick={() => setActionFeedback(null)}
-            className="text-slate-400 hover:text-white p-0.5 rounded transition-colors"
+            className="text-[#78716C] hover:text-[#292524] p-0.5 rounded transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -379,14 +387,14 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
       {/* 409 Stale Conflict Warning Banner (FR-11, FR-11b) */}
       {staleLines.length > 0 && (
-        <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <ShieldAlert className="w-5 h-5 text-[#D97706] shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-bold text-amber-300">
+              <h4 className="text-sm font-bold text-[#D97706]">
                 409 Snapshot Conflict Detected ({staleLines.length} line affected)
               </h4>
-              <p className="text-xs text-slate-300 mt-0.5">
+              <p className="text-xs text-[#78716C] mt-0.5">
                 Warehouse inventory batch version changed during planner review (FR-11). Approval blocked for affected lines to prevent over-allocation.
               </p>
             </div>
@@ -394,7 +402,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
           <button
             type="button"
             onClick={onReplanStaleLines}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-slate-950 bg-amber-400 hover:bg-amber-300 transition-all shadow-md shadow-amber-400/20 whitespace-nowrap select-none cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-all shadow-xs whitespace-nowrap select-none cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>1-Click Re-plan Stale Lines (FR-11b)</span>
@@ -515,31 +523,31 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
       {/* Section 1 & 7: Allocation Table View vs Mobile Card Grid */}
       {isGenerating ? (
         // Loading Skeleton
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center space-y-4">
-          <div className="flex items-center justify-center gap-3 text-indigo-400 font-semibold text-sm">
+        <div className="rounded-2xl border border-[#E7E5E4] bg-white p-8 text-center space-y-4 shadow-xs">
+          <div className="flex items-center justify-center gap-3 text-[#2563EB] font-semibold text-sm">
             <RotateCcw className="w-5 h-5 animate-spin" />
             <span>Optimizing multi-tier FMCG supply allocations across hubs...</span>
           </div>
           <div className="space-y-2 max-w-2xl mx-auto">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-10 bg-slate-800/40 rounded-xl animate-pulse" />
+              <div key={i} className="h-10 bg-[#F8F7F5] rounded-xl animate-pulse" />
             ))}
           </div>
         </div>
       ) : filteredAndSortedLines.length === 0 ? (
         // Empty Search / Filter State
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-12 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 mx-auto">
+        <div className="rounded-2xl border border-[#E7E5E4] bg-white p-12 text-center space-y-3 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-[#F8F7F5] border border-[#E7E5E4] flex items-center justify-center text-[#78716C] mx-auto">
             <FilterX className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-white">No allocations match your filters</h3>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
+          <h3 className="text-base font-bold text-[#292524]">No allocations match your filters</h3>
+          <p className="text-xs text-[#78716C] max-w-md mx-auto">
             We couldn't find any allocation lines matching your current search query or active filter criteria. Try adjusting or clearing filters.
           </p>
           <button
             type="button"
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 transition-all mt-2 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition-all mt-2 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Clear All Filters</span>
@@ -552,6 +560,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
             const wh = warehouses.find(w => w.id === line.warehouseId);
             const ret = retailers.find(r => r.id === line.retailerId);
             const prod = products.find(p => p.sku === line.sku);
+            const batch = batches?.find(b => b.warehouseId === line.warehouseId && b.sku === line.sku && b.batchNo === line.batchNo);
 
             return (
               <PlanCardItem
@@ -560,6 +569,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                 product={prod}
                 warehouse={wh}
                 retailer={ret}
+                batch={batch}
                 onExplain={setSelectedReasonLine}
                 onEdit={handleOpenOverride}
                 onApprove={handleApproveLineWithFeedback}
@@ -570,155 +580,232 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
         </div>
       ) : (
         // High-Density Desktop Table View with Sticky Header & Non-Wrapping SKU
-        <div className="rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60 shadow-xl">
+        <div className="rounded-2xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
           <div className="overflow-x-auto scrollbar-thin">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md text-slate-400 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-20 shadow-sm">
-                  <th className="py-3.5 px-4 min-w-[160px]">Source Warehouse</th>
-                  <th className="py-3.5 px-4 min-w-[210px]">Kirana Retailer</th>
-                  <th className="py-3.5 px-4 min-w-[230px]">Product & SKU</th>
-                  <th className="py-3.5 px-4 min-w-[150px]">Batch & ETA</th>
-                  <th className="py-3.5 px-4 min-w-[120px] text-right">Cases (Units)</th>
-                  <th className="py-3.5 px-4 min-w-[150px] text-center">Arrival Shelf Life</th>
-                  <th className="py-3.5 px-4 min-w-[110px] text-right">Route Freight</th>
+                <tr className="border-b border-[#E7E5E4] bg-[#F8F7F5] text-[#78716C] font-bold uppercase tracking-wider text-[11px] sticky top-0 z-20 shadow-xs select-none">
+                  <th className="py-3.5 px-4 min-w-[160px]">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'warehouse_asc' ? 'default' : 'warehouse_asc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors"
+                      title="Sort by Warehouse Source"
+                    >
+                      <span>Warehouse Source</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy === 'warehouse_asc' ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
+                  <th className="py-3.5 px-4 min-w-[210px]">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'retailer_asc' ? 'default' : 'retailer_asc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors"
+                      title="Sort by Kirana Retailer"
+                    >
+                      <span>Kirana Retailer</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy === 'retailer_asc' ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
+                  <th className="py-3.5 px-4 min-w-[230px]">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'product_asc' ? 'default' : 'product_asc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors"
+                      title="Sort by Product SKU"
+                    >
+                      <span>Product SKU</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy === 'product_asc' ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
+                  <th className="py-3.5 px-4 min-w-[170px]">Batch &amp; Expiry</th>
+                  <th className="py-3.5 px-4 min-w-[130px] text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'cases_desc' ? 'cases_asc' : 'cases_desc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors ml-auto"
+                      title="Sort by Cases / Units"
+                    >
+                      <span>Cases &amp; Units</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy.startsWith('cases') ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
+                  <th className="py-3.5 px-4 min-w-[160px] text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'shelf_life_desc' ? 'shelf_life_asc' : 'shelf_life_desc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors mx-auto"
+                      title="Sort by Arrival Shelf Life"
+                    >
+                      <span>Arrival Shelf Life</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy.startsWith('shelf_life') ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
+                  <th className="py-3.5 px-4 min-w-[130px] text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange({ sortBy: filters.sortBy === 'freight_asc' ? 'freight_desc' : 'freight_asc' })}
+                      className="inline-flex items-center gap-1.5 hover:text-[#292524] cursor-pointer transition-colors ml-auto"
+                      title="Sort by Freight Cost"
+                    >
+                      <span>Freight Cost</span>
+                      <ArrowUpDown className={`w-3 h-3 ${filters.sortBy.startsWith('freight') ? 'text-[#8B5E3C]' : 'text-[#78716C]'}`} />
+                    </button>
+                  </th>
                   <th className="py-3.5 px-4 min-w-[120px] text-center">Status</th>
-                  <th className="py-3.5 px-4 min-w-[180px] text-right sticky right-0 bg-slate-950/95 backdrop-blur-md">
+                  <th className="py-3.5 px-4 min-w-[210px] text-right sticky right-0 bg-[#F8F7F5] border-l border-[#E7E5E4]">
                     Explain / Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans">
+              <tbody className="divide-y divide-[#E7E5E4] font-sans">
                 {paginatedLines.map(line => {
                   const wh = warehouses.find(w => w.id === line.warehouseId);
                   const ret = retailers.find(r => r.id === line.retailerId);
                   const prod = products.find(p => p.sku === line.sku);
+                  const batch = batches?.find(b => b.warehouseId === line.warehouseId && b.sku === line.sku && b.batchNo === line.batchNo);
+                  const expiryDate = batch?.expiryDate;
 
                   const statusMap: Record<string, { label: string; className: string }> = {
                     PROPOSED: {
                       label: 'PROPOSED',
-                      className: 'bg-slate-800 text-slate-300 border-slate-700',
+                      className: 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]',
                     },
                     APPROVED: {
                       label: 'RESERVED',
-                      className: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+                      className: 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] font-semibold',
                     },
                     OVERRIDDEN: {
                       label: 'MODIFIED',
-                      className: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+                      className: 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold',
                     },
                     STALE: {
                       label: '409 STALE',
-                      className: 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse',
+                      className: 'bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] font-bold animate-pulse',
                     },
                     DISPATCHED: {
                       label: 'DISPATCHED',
-                      className: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+                      className: 'bg-[#E9D8C8]/60 text-[#8B5E3C] border border-[#8B5E3C]/30 font-semibold',
                     },
                     CANCELLED: {
                       label: 'CANCELLED',
-                      className: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                      className: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
                     },
                     EXPIRED: {
                       label: 'EXPIRED',
-                      className: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                      className: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
                     },
                   };
                   const statusConfig = statusMap[line.status] || {
                     label: line.status,
-                    className: 'bg-slate-800 text-slate-300 border-slate-700',
+                    className: 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]',
                   };
 
                   return (
                     <tr
                       key={line.id}
-                      className={`hover:bg-slate-800/40 transition-colors group ${
+                      className={`hover:bg-[#F8F7F5]/80 transition-colors group ${
                         line.status === 'STALE'
-                          ? 'bg-amber-950/20'
+                          ? 'bg-amber-50/20'
                           : line.status === 'OVERRIDDEN'
-                          ? 'bg-indigo-950/20'
+                          ? 'bg-blue-50/15'
+                          : line.status === 'APPROVED'
+                          ? 'bg-emerald-50/15'
                           : ''
                       }`}
                     >
                       {/* Warehouse Column */}
-                      <td className="py-3.5 px-4 font-medium text-slate-200">
-                        <div className="flex items-center gap-1.5 font-semibold text-slate-200">
-                          <Building className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <td className="py-3.5 px-4 font-medium text-[#292524]">
+                        <div className="flex items-center gap-1.5 font-bold text-[#292524]">
+                          <Building className="w-3.5 h-3.5 text-[#8B5E3C] shrink-0" />
                           <span>{wh?.city || line.warehouseId} Hub</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 block truncate max-w-[150px]" title={wh?.name}>
+                        <span className="text-[10px] text-[#78716C] block truncate max-w-[150px]" title={wh?.name}>
                           {wh?.name || line.warehouseId}
                         </span>
                       </td>
 
                       {/* Retailer Column */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5 font-semibold text-slate-200">
-                          <Store className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 font-bold text-[#292524]">
+                          <Store className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
                           <span className="truncate max-w-[190px]" title={ret?.name}>
                             {ret?.name || line.retailerId}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1 text-[10px] text-[#78716C] mt-0.5">
                           <span>{ret?.city}</span>
                           <span>•</span>
-                          <span className="uppercase text-indigo-400 font-semibold font-mono">
+                          <span className="uppercase text-[#2563EB] font-semibold font-mono">
                             Class {ret?.serviceClass}
                           </span>
                           {ret?.storageCases && (
-                            <span className="text-slate-500 font-mono">(Cap: {ret.storageCases}cs)</span>
+                            <span className="text-[#78716C] font-mono">(Cap: {ret.storageCases}cs)</span>
                           )}
                         </div>
                       </td>
 
-                      {/* Product & SKU Column - Fix wrapping */}
+                      {/* Product & SKU Column - Prevent SKU awkward wrapping */}
                       <td className="py-3.5 px-4">
-                        <p className="font-bold text-slate-100 truncate max-w-[210px]" title={prod?.name}>
+                        <p className="font-bold text-[#292524] truncate max-w-[210px]" title={prod?.name}>
                           {prod?.name || line.sku}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <button
                             type="button"
                             onClick={e => handleCopySku(line.sku, line.id, e)}
-                            className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700/80 transition-colors whitespace-nowrap cursor-pointer select-all"
+                            className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-[#292524] bg-[#F8F7F5] hover:bg-[#E9D8C8]/60 px-2 py-0.5 rounded border border-[#E7E5E4] transition-colors whitespace-nowrap cursor-pointer select-all"
                             title="Click to copy SKU code"
                           >
                             <span>{line.sku}</span>
                             {copiedSkuId === line.id ? (
-                              <Check className="w-3 h-3 text-emerald-400" />
+                              <Check className="w-3 h-3 text-[#15803D]" />
                             ) : (
-                              <Copy className="w-3 h-3 text-slate-400 opacity-60 group-hover:opacity-100" />
+                              <Copy className="w-3 h-3 text-[#78716C] opacity-70 group-hover:opacity-100" />
                             )}
                           </button>
                           {prod?.category && (
-                            <span className="text-[10px] text-slate-400 bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-800/80 truncate max-w-[90px]">
+                            <span className="text-[10px] text-[#78716C] bg-[#F8F7F5] px-1.5 py-0.5 rounded border border-[#E7E5E4] truncate max-w-[90px]">
                               {prod.category}
                             </span>
                           )}
                         </div>
                       </td>
 
-                      {/* Batch & ETA Column */}
+                      {/* Batch & Expiry Column */}
                       <td className="py-3.5 px-4">
-                        <span className="font-mono text-[11px] font-semibold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/80 whitespace-nowrap">
-                          {line.batchNo}
-                        </span>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
-                          <Calendar className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span className="font-mono">ETA {line.arrivalDate}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono text-[11px] font-semibold text-[#78716C] bg-[#F8F7F5] px-2 py-0.5 rounded border border-[#E7E5E4] whitespace-nowrap">
+                            {line.batchNo}
+                          </span>
+                          {expiryDate && (
+                            <span className="font-mono text-[10px] text-[#8B5E3C] bg-[#E9D8C8]/50 px-1.5 py-0.5 rounded border border-[#8B5E3C]/30 whitespace-nowrap">
+                              Exp: {expiryDate}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] text-[#78716C] mt-1 font-mono">
+                          <Calendar className="w-3 h-3 text-[#78716C] shrink-0" />
+                          <span>ETA {line.arrivalDate}</span>
+                          {line.explanation?.shelfLifeDaysRemaining !== undefined && (
+                            <>
+                              <span>•</span>
+                              <span className="text-[#15803D] font-medium">{line.explanation.shelfLifeDaysRemaining}d left</span>
+                            </>
+                          )}
                         </div>
                       </td>
 
                       {/* Cases / Units Column - Right aligned */}
                       <td className="py-3.5 px-4 text-right">
-                        <div className="font-black text-sm text-white font-mono tabular-nums">
+                        <div className="font-black text-sm text-[#292524] font-mono tabular-nums">
                           {line.cases} cs
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono tabular-nums">
+                        <div className="text-[10px] text-[#78716C] font-mono tabular-nums">
                           {line.units.toLocaleString()} units
                         </div>
                         {line.override && (
-                          <span className="inline-block mt-0.5 text-[9px] font-bold text-indigo-300 bg-indigo-500/20 px-1 rounded">
+                          <span className="inline-block mt-0.5 text-[9px] font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-1 rounded">
                             Overridden from {line.override.originalCases}
                           </span>
                         )}
@@ -735,10 +822,10 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
                       {/* Route Freight Column - Right aligned */}
                       <td className="py-3.5 px-4 text-right">
-                        <div className="font-bold text-sm text-amber-300 font-mono tabular-nums">
+                        <div className="font-bold text-sm text-[#8B5E3C] font-mono tabular-nums">
                           ₹{line.freightRupees.toLocaleString()}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono tabular-nums">
+                        <div className="text-[10px] text-[#78716C] font-mono tabular-nums">
                           ₹{line.cases > 0 ? Math.round(line.freightRupees / line.cases) : 0}/cs
                         </div>
                       </td>
@@ -753,39 +840,58 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                       </td>
 
                       {/* Actions Column */}
-                      <td className="py-3.5 px-4 text-right sticky right-0 bg-slate-900/95 backdrop-blur-md">
+                      <td className="py-3.5 px-4 text-right sticky right-0 bg-white/95 border-l border-[#E7E5E4]">
                         <div className="flex items-center justify-end gap-1.5">
-                          {/* Explain Button */}
+                          {/* Explain Button: Blue Informational */}
                           <button
                             type="button"
                             onClick={() => setSelectedReasonLine(line)}
-                            className="flex items-center gap-1 text-[11px] font-semibold text-indigo-300 hover:text-white bg-indigo-500/10 hover:bg-indigo-500/20 px-2.5 py-1.5 rounded-lg border border-indigo-500/30 transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] px-2.5 py-1.5 rounded-lg border border-[#BFDBFE] transition-colors cursor-pointer shadow-xs"
                             title="Inspect explainable AI reasoning, value tiers and trade-offs"
                           >
-                            <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+                            <HelpCircle className="w-3.5 h-3.5 text-[#2563EB]" />
                             <span>Explain</span>
                           </button>
 
-                          {/* Override / Edit Button */}
+                          {/* Override / Edit Button: Secondary */}
                           <button
                             type="button"
                             onClick={() => handleOpenOverride(line)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="inline-flex items-center justify-center p-1.5 rounded-lg text-[#292524] hover:text-[#8B5E3C] bg-white hover:bg-[#E9D8C8]/40 border border-[#8B5E3C]/40 hover:border-[#8B5E3C] transition-colors cursor-pointer shadow-xs"
                             title="Override allocation quantity with mandatory justification"
                           >
-                            <Edit3 className="w-3.5 h-3.5" />
+                            <Edit3 className="w-3.5 h-3.5 text-[#8B5E3C]" />
                           </button>
 
-                          {/* Approve Button */}
+                          {/* Approve Button: Primary Red */}
                           {line.status !== 'APPROVED' && line.status !== 'STALE' && (
                             <button
                               type="button"
                               onClick={() => handleApproveLineWithFeedback(line.id)}
                               disabled={approvingLineId === line.id}
-                              className="p-1.5 rounded-lg text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/50 transition-colors cursor-pointer disabled:opacity-50"
+                              className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer disabled:opacity-50"
                               title="Approve and reserve stock atomically"
                             >
-                              <CheckCircle2 className="w-4 h-4" />
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Approve</span>
+                            </button>
+                          )}
+
+                          {line.status === 'APPROVED' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#15803D] bg-[#F0FDF4] px-2.5 py-1 rounded-md border border-[#BBF7D0]">
+                              <Check className="w-3 h-3 text-[#15803D]" /> Locked
+                            </span>
+                          )}
+
+                          {line.status === 'STALE' && (
+                            <button
+                              type="button"
+                              onClick={onReplanStaleLines}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-2.5 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
+                              title="1-Click Re-plan this stale line"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Re-plan</span>
                             </button>
                           )}
                         </div>
@@ -798,7 +904,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
           </div>
 
           {/* Table Footer with Pagination Controls */}
-          <div className="p-3.5 bg-slate-950/80 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <div className="p-3.5 bg-[#F8F7F5] border-t border-[#E7E5E4] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#78716C]">
             <div className="flex items-center gap-2">
               <span>Rows per page:</span>
               <select
@@ -806,14 +912,14 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                 onChange={e => {
                   handleFilterChange({ pageSize: parseInt(e.target.value) || 10 });
                 }}
-                className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="bg-white border border-[#E7E5E4] rounded px-2 py-1 text-[#292524] focus:outline-none focus:border-[#2563EB] cursor-pointer font-medium"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
-              <span className="text-[11px] text-slate-500 ml-2">
+              <span className="text-[11px] text-[#78716C] ml-2">
                 Showing {(currentPage - 1) * filters.pageSize + 1}–
                 {Math.min(currentPage * filters.pageSize, totalFilteredCount)} of {totalFilteredCount}
               </span>
@@ -824,19 +930,19 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                 type="button"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage <= 1}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                className="p-1.5 rounded-lg text-[#78716C] hover:text-[#292524] bg-white border border-[#E7E5E4] hover:bg-[#E9D8C8]/40 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                 title="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-2 font-mono text-slate-300 font-semibold">
+              <span className="px-2 font-mono text-[#292524] font-semibold">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 type="button"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage >= totalPages}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                className="p-1.5 rounded-lg text-[#78716C] hover:text-[#292524] bg-white border border-[#E7E5E4] hover:bg-[#E9D8C8]/40 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                 title="Next page"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -848,9 +954,9 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
       {/* Unmet Demand & Constraint Bound Log (FR-10, T1, T21) */}
       {planRun && planRun.unmet && planRun.unmet.length > 0 && (
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 shadow-lg space-y-3">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+        <div className="p-4 rounded-xl bg-white border border-[#E7E5E4] shadow-xs space-y-3">
+          <h3 className="text-xs font-bold text-[#78716C] uppercase tracking-wider flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4 text-[#D97706]" />
             <span>Unmet / Displaced Demand Diagnostics (Limiting Constraints)</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
@@ -858,20 +964,20 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
               const r = retailers.find(ret => ret.id === item.retailerId);
               const p = products.find(prod => prod.sku === item.sku);
               return (
-                <div key={idx} className="p-3 rounded-lg bg-slate-950 border border-slate-800/80 flex items-start gap-2.5">
-                  <div className="w-6 h-6 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 text-[11px] font-bold">
+                <div key={idx} className="p-3 rounded-lg bg-[#F8F7F5] border border-[#E7E5E4] flex items-start gap-2.5">
+                  <div className="w-6 h-6 rounded bg-amber-50 border border-amber-200 text-[#D97706] flex items-center justify-center shrink-0 text-[11px] font-bold">
                     !
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 font-semibold text-slate-200">
+                    <div className="flex items-center gap-1.5 font-bold text-[#292524]">
                       <span>{r?.name || item.retailerId}</span>
-                      <span className="text-slate-500">•</span>
+                      <span className="text-[#78716C]">•</span>
                       <span>{p?.name || item.sku}</span>
                     </div>
-                    <p className="text-[11px] text-amber-300/90 mt-0.5">
+                    <p className="text-[11px] text-[#D97706] mt-0.5 font-medium">
                       Unshipped: <span className="font-mono font-bold">{item.unmetCases}</span> cases ({item.unmetUnits} units)
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-[#78716C] mt-0.5">
                       <strong>Limiting Reason:</strong> {item.details}
                     </p>
                   </div>
@@ -906,38 +1012,38 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
 
       {/* Enhanced Planner Override Modal with Instant Validation & Presets */}
       {overrideModalLine && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white border border-[#E7E5E4] rounded-2xl shadow-2xl p-6 space-y-4 text-[#292524]">
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
+              <h3 className="text-base font-bold text-[#292524] flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-[#8B5E3C]" />
                 <span>Override Allocation Quantity</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setOverrideModalLine(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                className="text-[#78716C] hover:text-[#292524] p-1 rounded-lg hover:bg-[#F8F7F5] transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
-              <p className="text-xs font-bold text-white">
+            <div className="bg-[#F8F7F5] p-3 rounded-xl border border-[#E7E5E4] space-y-1">
+              <p className="text-xs font-bold text-[#292524]">
                 {products.find(p => p.sku === overrideModalLine.sku)?.name || overrideModalLine.sku}
               </p>
-              <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <div className="flex items-center justify-between text-[11px] text-[#78716C]">
                 <span>Destination: {retailers.find(r => r.id === overrideModalLine.retailerId)?.name}</span>
-                <span className="font-mono text-indigo-400">{overrideModalLine.sku}</span>
+                <span className="font-mono text-[#2563EB] font-semibold">{overrideModalLine.sku}</span>
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-[#292524]">
                   New Cases to Dispatch:
                 </label>
-                <span className="text-[11px] text-slate-400 font-mono">
+                <span className="text-[11px] text-[#78716C] font-mono">
                   = {overrideCases * (products.find(p => p.sku === overrideModalLine.sku)?.caseSize || 12)} units
                 </span>
               </div>
@@ -950,40 +1056,40 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                     setOverrideCases(parseInt(e.target.value) || 0);
                     setOverrideError('');
                   }}
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold text-sm font-mono focus:outline-none focus:border-indigo-500"
+                  className="flex-1 bg-[#F8F7F5] border border-[#E7E5E4] rounded-xl px-3 py-2 text-[#292524] font-bold text-sm font-mono focus:outline-none focus:border-[#2563EB]"
                 />
                 {/* Presets */}
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setOverrideCases(c => Math.max(1, c - 1))}
-                    className="px-2 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors"
+                    className="px-2 py-1.5 text-xs font-mono font-bold bg-[#F8F7F5] hover:bg-[#E9D8C8]/60 text-[#292524] rounded border border-[#E7E5E4] transition-colors cursor-pointer"
                   >
                     -1
                   </button>
                   <button
                     type="button"
                     onClick={() => setOverrideCases(c => c + 1)}
-                    className="px-2 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors"
+                    className="px-2 py-1.5 text-xs font-mono font-bold bg-[#F8F7F5] hover:bg-[#E9D8C8]/60 text-[#292524] rounded border border-[#E7E5E4] transition-colors cursor-pointer"
                   >
                     +1
                   </button>
                   <button
                     type="button"
                     onClick={() => setOverrideCases(c => c + 5)}
-                    className="px-2 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors"
+                    className="px-2 py-1.5 text-xs font-mono font-bold bg-[#F8F7F5] hover:bg-[#E9D8C8]/60 text-[#292524] rounded border border-[#E7E5E4] transition-colors cursor-pointer"
                   >
                     +5
                   </button>
                 </div>
               </div>
-              <span className="text-[10px] text-slate-400 mt-1 block">
-                Original algorithm recommendation: <strong className="text-slate-200">{overrideModalLine.cases} cases</strong>
+              <span className="text-[10px] text-[#78716C] mt-1 block">
+                Original algorithm recommendation: <strong className="text-[#292524]">{overrideModalLine.cases} cases</strong>
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#292524] mb-1">
                 Mandatory Planner Audit Reason (FR-11):
               </label>
               <textarea
@@ -994,29 +1100,29 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                   setOverrideError('');
                 }}
                 placeholder="e.g. Retailer reported upcoming festival demand surge; branch manager authorized safety buffer."
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full bg-[#F8F7F5] border border-[#E7E5E4] rounded-xl p-2.5 text-xs text-[#292524] placeholder-[#78716C] focus:outline-none focus:border-[#2563EB] transition-colors"
               />
             </div>
 
             {overrideError && (
-              <p className="text-xs text-rose-300 bg-rose-950/60 p-2.5 rounded-xl border border-rose-800/60 flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <p className="text-xs text-[#DC2626] bg-red-50 p-2.5 rounded-xl border border-red-200 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#DC2626] shrink-0" />
                 <span>{overrideError}</span>
               </p>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E7E5E4]">
               <button
                 type="button"
                 onClick={() => setOverrideModalLine(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-[#292524] bg-white border border-[#8B5E3C] hover:bg-[#E9D8C8]/50 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveOverride}
-                className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 Commit Override
               </button>

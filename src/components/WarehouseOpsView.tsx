@@ -3,13 +3,7 @@ import {
   Warehouse as WarehouseIcon,
   Package,
   Truck,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  AlertTriangle,
-  Send,
-  Boxes,
-  FileText
+  Send
 } from 'lucide-react';
 import { Warehouse, InventoryBatch, AllocationLine, Product, Retailer } from '../types';
 
@@ -32,7 +26,6 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
   retailers,
   onDispatchLine,
   onUpdateBatchCount,
-  isOnline,
 }) => {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('WH-PUN');
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
@@ -53,30 +46,30 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[#292524]">
       {/* Top Header */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="text-xl font-bold text-[#292524] tracking-tight">
               Warehouse Picking &amp; Dispatch Console
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-[#15803D] border border-emerald-200">
               J4 Sunita (Warehouse Mgr)
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#78716C] mt-1">
             Pick approved batches in FEFO order • Shift stock to in-transit • Record offline warehouse counts (Section 11.3 Rule 7)
           </p>
         </div>
 
         {/* Warehouse Selector */}
         <div className="flex items-center gap-2">
-          <WarehouseIcon className="w-4 h-4 text-indigo-400" />
+          <WarehouseIcon className="w-4 h-4 text-[#8B5E3C]" />
           <select
             value={selectedWarehouseId}
             onChange={e => setSelectedWarehouseId(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-white font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
+            className="bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#2563EB] cursor-pointer"
           >
             {warehouses.map(w => (
               <option key={w.id} value={w.id}>
@@ -89,56 +82,56 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
 
       {/* Warehouse Capacity Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-panel p-4 rounded-xl border-slate-800">
-          <span className="text-xs text-slate-400">Hub Cycle Capacity</span>
-          <p className="text-2xl font-black text-white mt-1">
+        <div className="bg-white p-4 rounded-xl border border-[#E7E5E4] shadow-xs">
+          <span className="text-xs text-[#78716C] font-semibold">Hub Cycle Capacity</span>
+          <p className="text-2xl font-black text-[#292524] mt-1 font-mono">
             {selectedWarehouse.capacityCasesPerCycle.toLocaleString()} cases
           </p>
-          <span className="text-[11px] text-slate-400">Weekly dock throughput limit</span>
+          <span className="text-[11px] text-[#78716C]">Weekly dock throughput limit</span>
         </div>
 
-        <div className="glass-panel p-4 rounded-xl border-slate-800">
-          <span className="text-xs text-slate-400">Ready to Dispatch</span>
-          <p className="text-2xl font-black text-emerald-400 mt-1">
+        <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs">
+          <span className="text-xs text-[#15803D] font-semibold">Ready to Dispatch</span>
+          <p className="text-2xl font-black text-[#15803D] mt-1 font-mono">
             {whDispatchLines.length} shipments
           </p>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-[#78716C]">
             {whDispatchLines.reduce((acc, l) => acc + l.cases, 0)} cases reserved
           </span>
         </div>
 
-        <div className="glass-panel p-4 rounded-xl border-slate-800">
-          <span className="text-xs text-slate-400">Physical Batches Held</span>
-          <p className="text-2xl font-black text-indigo-300 mt-1">
+        <div className="bg-white p-4 rounded-xl border border-[#8B5E3C]/30 shadow-xs">
+          <span className="text-xs text-[#8B5E3C] font-semibold">Physical Batches Held</span>
+          <p className="text-2xl font-black text-[#8B5E3C] mt-1 font-mono">
             {whBatches.length} active batches
           </p>
-          <span className="text-[11px] text-slate-400">FEFO tracked with version control</span>
+          <span className="text-[11px] text-[#78716C]">FEFO tracked with version control</span>
         </div>
       </div>
 
       {/* Picking & Dispatch List for Approved Lines */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white">
+            <Truck className="w-5 h-5 text-[#8B5E3C]" />
+            <h3 className="text-base font-bold text-[#292524]">
               Approved Dispatch Pick Slip ({selectedWarehouse.name})
             </h3>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#78716C]">
             {whDispatchLines.length} lines waiting for truck load
           </span>
         </div>
 
         {whDispatchLines.length === 0 ? (
-          <div className="text-center py-10 text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
+          <div className="text-center py-10 text-[#78716C] text-xs bg-[#F8F7F5] rounded-xl border border-[#E7E5E4]">
             No pending dispatches for this warehouse. Approve allocation lines in the "Allocation Plan" tab first.
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950/60">
-            <table className="w-full text-left text-xs">
+          <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900 text-slate-400 font-semibold uppercase">
+                <tr className="border-b border-[#E7E5E4] bg-[#F8F7F5] text-[#78716C] font-semibold uppercase">
                   <th className="py-2.5 px-3">Destination Kirana</th>
                   <th className="py-2.5 px-3">Product SKU</th>
                   <th className="py-2.5 px-3">Batch to Pick</th>
@@ -147,40 +140,41 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
                   <th className="py-2.5 px-3 text-right">Dispatch Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[#E7E5E4]">
                 {whDispatchLines.map(line => {
                   const ret = retailers.find(r => r.id === line.retailerId);
                   const prod = products.find(p => p.sku === line.sku);
 
                   return (
-                    <tr key={line.id} className="hover:bg-slate-900/40">
-                      <td className="py-3 px-3 font-medium text-slate-200">
+                    <tr key={line.id} className="hover:bg-[#F8F7F5]/80 transition-colors">
+                      <td className="py-3 px-3 font-semibold text-[#292524]">
                         {ret?.name} ({ret?.city})
-                        <span className="block text-[10px] text-slate-500">Class {ret?.serviceClass} Kirana</span>
+                        <span className="block text-[10px] text-[#78716C]">Class {ret?.serviceClass} Kirana</span>
                       </td>
 
-                      <td className="py-3 px-3 font-semibold text-slate-200">
+                      <td className="py-3 px-3 font-bold text-[#292524]">
                         {prod?.name}
                       </td>
 
                       <td className="py-3 px-3">
-                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">
+                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
                           {line.batchNo}
                         </span>
                       </td>
 
-                      <td className="py-3 px-3 text-center font-bold text-white">
+                      <td className="py-3 px-3 text-center font-bold text-[#292524] font-mono">
                         {line.cases} cs ({line.units} units)
                       </td>
 
-                      <td className="py-3 px-3 font-bold text-emerald-400">
+                      <td className="py-3 px-3 font-bold text-[#15803D]">
                         {line.shelfLifeOnArrivalPct}% upon arrival
                       </td>
 
                       <td className="py-3 px-3 text-right">
+                        {/* Primary Action Button: Red */}
                         <button
                           onClick={() => onDispatchLine(line.id)}
-                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all ml-auto"
+                          className="flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] text-white shadow-xs transition-all ml-auto cursor-pointer"
                         >
                           <Send className="w-3.5 h-3.5" />
                           <span>Confirm Dispatch</span>
@@ -196,23 +190,23 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
       </div>
 
       {/* Warehouse Physical Batches & Inventory Count (Offline-Capable) */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white">
+            <Package className="w-5 h-5 text-[#8B5E3C]" />
+            <h3 className="text-base font-bold text-[#292524]">
               Warehouse Batch Physical Inventory &amp; Stock Count
             </h3>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#78716C]">
             Changes trigger batch version increment (Section 11.3)
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950/60">
-          <table className="w-full text-left text-xs">
+        <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900 text-slate-400 font-semibold uppercase">
+              <tr className="border-b border-[#E7E5E4] bg-[#F8F7F5] text-[#78716C] font-semibold uppercase">
                 <th className="py-2.5 px-3">Batch Number</th>
                 <th className="py-2.5 px-3">SKU</th>
                 <th className="py-2.5 px-3">Expiry Date</th>
@@ -223,48 +217,48 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
                 <th className="py-2.5 px-3 text-right">Count Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-[#E7E5E4]">
               {whBatches.map(batch => {
                 const prod = products.find(p => p.sku === batch.sku);
                 const available = Math.max(0, batch.qtyUnits - batch.reservedUnits);
                 const isEditing = editingBatchId === batch.id;
 
                 return (
-                  <tr key={batch.id} className="hover:bg-slate-900/40">
-                    <td className="py-3 px-3 font-mono text-indigo-300 font-medium">
+                  <tr key={batch.id} className="hover:bg-[#F8F7F5]/80 transition-colors">
+                    <td className="py-3 px-3 font-mono text-[#2563EB] font-bold">
                       {batch.batchNo}
                     </td>
 
-                    <td className="py-3 px-3 font-medium text-slate-200">
+                    <td className="py-3 px-3 font-semibold text-[#292524]">
                       {prod?.name}
                     </td>
 
-                    <td className="py-3 px-3 text-slate-300">
+                    <td className="py-3 px-3 text-[#78716C] font-mono">
                       {batch.expiryDate}
                     </td>
 
-                    <td className="py-3 px-3 text-center font-bold text-white">
+                    <td className="py-3 px-3 text-center font-bold text-[#292524] font-mono">
                       {isEditing ? (
                         <input
                           type="number"
                           value={countInput}
                           onChange={e => setCountInput(parseInt(e.target.value) || 0)}
-                          className="w-20 bg-slate-800 border border-indigo-500 rounded px-2 py-0.5 text-center text-white"
+                          className="w-20 bg-[#F8F7F5] border border-[#2563EB] rounded px-2 py-0.5 text-center text-[#292524] font-mono font-bold"
                         />
                       ) : (
                         `${batch.qtyUnits} u`
                       )}
                     </td>
 
-                    <td className="py-3 px-3 text-center font-semibold text-amber-400">
+                    <td className="py-3 px-3 text-center font-semibold text-[#D97706] font-mono">
                       {batch.reservedUnits} u
                     </td>
 
-                    <td className="py-3 px-3 text-center font-bold text-emerald-400">
+                    <td className="py-3 px-3 text-center font-bold text-[#15803D] font-mono">
                       {available} u
                     </td>
 
-                    <td className="py-3 px-3 text-center font-mono text-slate-400">
+                    <td className="py-3 px-3 text-center font-mono text-[#78716C]">
                       v{batch.version}
                     </td>
 
@@ -273,13 +267,13 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => handleSaveCount(batch.id)}
-                            className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px]"
+                            className="px-2.5 py-1 rounded bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold text-[11px] cursor-pointer"
                           >
                             Save
                           </button>
                           <button
                             onClick={() => setEditingBatchId(null)}
-                            className="px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white text-[11px]"
+                            className="px-2 py-1 rounded bg-[#F8F7F5] border border-[#E7E5E4] text-[#78716C] hover:text-[#292524] text-[11px] cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -287,7 +281,7 @@ export const WarehouseOpsView: React.FC<WarehouseOpsViewProps> = ({
                       ) : (
                         <button
                           onClick={() => handleStartCount(batch)}
-                          className="text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded transition-colors"
+                          className="text-[11px] font-semibold text-[#292524] bg-white border border-[#8B5E3C] hover:bg-[#E9D8C8]/50 px-2.5 py-1 rounded transition-colors cursor-pointer"
                         >
                           Record Count
                         </button>

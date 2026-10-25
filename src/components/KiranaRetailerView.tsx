@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import {
-  Store,
   Wifi,
   WifiOff,
   ShoppingBag,
   PackageCheck,
-  PackageX,
   Clock,
   PlusCircle,
   CheckCircle2,
-  AlertTriangle,
   RotateCcw,
-  Languages,
-  DollarSign
+  Languages
 } from 'lucide-react';
 import { Product, Retailer, SyncEvent, InTransitShipment, RejectionReason } from '../types';
 
@@ -135,42 +131,42 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[#292524]">
       {/* Top Header */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="text-xl font-bold text-[#292524] tracking-tight">
               {t.title}
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-[#D97706] border border-amber-200">
               J4 &amp; J5 Ganesh (Kirana)
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Store: <strong className="text-white">{currentRetailer.name}</strong> ({currentRetailer.city}) • Space Cap: {currentRetailer.storageCases} cases • Min Shelf Life: {Math.round(currentRetailer.minShelfLifePct * 100)}%
+          <p className="text-xs text-[#78716C] mt-1">
+            Store: <strong className="text-[#292524]">{currentRetailer.name}</strong> ({currentRetailer.city}) • Space Cap: {currentRetailer.storageCases} cases • Min Shelf Life: {Math.round(currentRetailer.minShelfLifePct * 100)}%
           </p>
         </div>
 
         {/* Language Selector (FR-25) */}
         <div className="flex items-center gap-2">
-          <Languages className="w-4 h-4 text-slate-400" />
-          <div className="flex rounded-lg bg-slate-900 border border-slate-800 p-0.5 text-xs">
+          <Languages className="w-4 h-4 text-[#78716C]" />
+          <div className="flex rounded-lg bg-[#F8F7F5] border border-[#E7E5E4] p-0.5 text-xs">
             <button
               onClick={() => setLang('en')}
-              className={`px-2.5 py-1 rounded font-medium ${lang === 'en' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`px-2.5 py-1 rounded font-semibold transition-colors cursor-pointer ${lang === 'en' ? 'bg-[#8B5E3C] text-white shadow-xs' : 'text-[#78716C] hover:text-[#292524]'}`}
             >
               English
             </button>
             <button
               onClick={() => setLang('hi')}
-              className={`px-2.5 py-1 rounded font-medium ${lang === 'hi' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`px-2.5 py-1 rounded font-semibold transition-colors cursor-pointer ${lang === 'hi' ? 'bg-[#8B5E3C] text-white shadow-xs' : 'text-[#78716C] hover:text-[#292524]'}`}
             >
               हिंदी
             </button>
             <button
               onClick={() => setLang('mr')}
-              className={`px-2.5 py-1 rounded font-medium ${lang === 'mr' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`px-2.5 py-1 rounded font-semibold transition-colors cursor-pointer ${lang === 'mr' ? 'bg-[#8B5E3C] text-white shadow-xs' : 'text-[#78716C] hover:text-[#292524]'}`}
             >
               मराठी
             </button>
@@ -181,20 +177,24 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       {/* Connectivity Banner */}
       <div className={`p-4 rounded-xl border flex items-center justify-between gap-4 ${
         isOnline
-          ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-          : 'bg-amber-950/40 border-amber-500/50 text-amber-300'
+          ? 'bg-emerald-50 border-emerald-200 text-[#15803D]'
+          : 'bg-amber-50 border-amber-200 text-[#D97706]'
       }`}>
         <div className="flex items-center gap-3">
           {isOnline ? (
-            <Wifi className="w-5 h-5 text-emerald-400 shrink-0" />
+            <Wifi className="w-5 h-5 text-[#15803D] shrink-0" />
           ) : (
-            <WifiOff className="w-5 h-5 text-amber-400 shrink-0" />
+            <WifiOff className="w-5 h-5 text-[#D97706] shrink-0" />
           )}
           <div className="text-xs">
             <p className="font-bold">
+<<<<<<< Updated upstream
               {isOnline ? 'Demo online: local event processing' : 'Demo offline: event queue enabled'}
+=======
+              {isOnline ? 'Online: Direct Live Sync to FastAPI Backend' : 'Offline Mode: Kirana Connectivity Lost'}
+>>>>>>> Stashed changes
             </p>
-            <p className="text-slate-300 text-[11px] mt-0.5">
+            <p className="text-[#78716C] text-[11px] mt-0.5">
               {isOnline
                 ? 'This toggle simulates online event handling in the local demo; it does not confirm a server sync.'
                 : 'Transactions are queued in this browser demo. Reconnecting processes the local queue only.'}
@@ -205,7 +205,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
         {queuedEvents.length > 0 && (
           <button
             onClick={onTriggerSync}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all shadow-md shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#DC2626] text-white hover:bg-[#B91C1C] transition-all shadow-xs shrink-0 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Sync {queuedEvents.length} Queued</span>
@@ -214,21 +214,21 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       </div>
 
       {/* Incoming Distributor Deliveries (Receive / Reject) */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PackageCheck className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white">
+            <PackageCheck className="w-5 h-5 text-[#8B5E3C]" />
+            <h3 className="text-base font-bold text-[#292524]">
               {t.incomingDeliveries}
             </h3>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#78716C]">
             {retailerShipments.length} deliveries arriving
           </span>
         </div>
 
         {retailerShipments.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
+          <div className="text-center py-8 text-[#78716C] text-xs bg-[#F8F7F5] rounded-xl border border-[#E7E5E4]">
             {t.noDeliveries}
           </div>
         ) : (
@@ -238,23 +238,24 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
               return (
                 <div
                   key={shipment.id}
-                  className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  className="p-4 rounded-xl bg-[#F8F7F5] border border-[#E7E5E4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{prod?.name}</span>
-                      <span className="font-mono text-xs text-indigo-400 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-800/60">
+                      <span className="font-bold text-[#292524] text-sm">{prod?.name}</span>
+                      <span className="font-mono text-xs text-[#2563EB] bg-[#EFF6FF] px-1.5 py-0.5 rounded border border-[#BFDBFE]">
                         {shipment.batchNo}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Shipped: <strong className="text-white">{shipment.cases} cases</strong> ({shipment.units} units) • Dispatched at {new Date(shipment.dispatchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <p className="text-xs text-[#78716C] mt-1">
+                      Shipped: <strong className="text-[#292524]">{shipment.cases} cases</strong> ({shipment.units} units) • Dispatched at {new Date(shipment.dispatchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
 
+                  {/* Primary Action Button: Red */}
                   <button
                     onClick={() => handleOpenReceiptModal(shipment)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] shadow-xs transition-all cursor-pointer"
                   >
                     <PackageCheck className="w-4 h-4" />
                     <span>{t.confirmReceipt}</span>
@@ -269,22 +270,22 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       {/* Record Counter Sales & Closing Physical Count */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Sales Delta Form */}
-        <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-4">
+        <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-bold text-white">{t.recordSale}</h3>
+            <ShoppingBag className="w-5 h-5 text-[#15803D]" />
+            <h3 className="text-base font-bold text-[#292524]">{t.recordSale}</h3>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#78716C]">
             Records incremental kirana counter sales. Deduplicated with idempotent eventId (FR-04).
           </p>
 
           <form onSubmit={handleSaleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Select Product:</label>
+              <label className="block text-xs font-semibold text-[#292524] mb-1">Select Product:</label>
               <select
                 value={selectedSaleSku}
                 onChange={e => setSelectedSaleSku(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2 text-xs focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] rounded-lg p-2 text-xs focus:outline-none focus:border-[#2563EB] font-medium cursor-pointer"
               >
                 {products.map(p => (
                   <option key={p.sku} value={p.sku}>{p.name}</option>
@@ -293,26 +294,27 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Units Sold Today:</label>
+              <label className="block text-xs font-semibold text-[#292524] mb-1">Units Sold Today:</label>
               <input
                 type="number"
                 min={1}
                 value={unitsSoldInput}
                 onChange={e => setUnitsSoldInput(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-900 border border-slate-700 text-white font-bold rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] font-bold rounded-lg p-2 text-sm focus:outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
+            {/* Primary Action Button: Red */}
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Submit Daily Sale</span>
             </button>
 
             {saleSuccessMessage && (
-              <p className="text-xs text-emerald-400 bg-emerald-950/40 p-2 rounded border border-emerald-800/40 animate-in fade-in">
+              <p className="text-xs text-[#15803D] bg-emerald-50 p-2 rounded border border-emerald-200 animate-in fade-in font-medium">
                 {saleSuccessMessage}
               </p>
             )}
@@ -320,22 +322,22 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
         </div>
 
         {/* Physical Stock Count Form */}
-        <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-4">
+        <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
           <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white">{t.recordCount}</h3>
+            <Clock className="w-5 h-5 text-[#8B5E3C]" />
+            <h3 className="text-base font-bold text-[#292524]">{t.recordCount}</h3>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#78716C]">
             Absolute physical shelf count. Older counts are automatically superseded (T8, Section 15.4).
           </p>
 
           <form onSubmit={handleCountSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Select Product:</label>
+              <label className="block text-xs font-semibold text-[#292524] mb-1">Select Product:</label>
               <select
                 value={selectedCountSku}
                 onChange={e => setSelectedCountSku(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2 text-xs focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] rounded-lg p-2 text-xs focus:outline-none focus:border-[#2563EB] font-medium cursor-pointer"
               >
                 {products.map(p => (
                   <option key={p.sku} value={p.sku}>{p.name}</option>
@@ -344,26 +346,27 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Units on Shelf Right Now:</label>
+              <label className="block text-xs font-semibold text-[#292524] mb-1">Units on Shelf Right Now:</label>
               <input
                 type="number"
                 min={0}
                 value={countInput}
                 onChange={e => setCountInput(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-900 border border-slate-700 text-white font-bold rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] font-bold rounded-lg p-2 text-sm focus:outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
+            {/* Primary Action Button: Red */}
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Update Physical Count</span>
             </button>
 
             {countSuccessMessage && (
-              <p className="text-xs text-indigo-300 bg-indigo-950/40 p-2 rounded border border-indigo-800/40 animate-in fade-in">
+              <p className="text-xs text-[#15803D] bg-emerald-50 p-2 rounded border border-emerald-200 animate-in fade-in font-medium">
                 {countSuccessMessage}
               </p>
             )}
@@ -372,36 +375,36 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
       </div>
 
       {/* Offline Event Queue Diagnostics */}
-      <div className="glass-panel p-6 rounded-2xl border-slate-800 space-y-3">
+      <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-indigo-400" />
+          <h4 className="text-xs font-bold text-[#78716C] uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-[#8B5E3C]" />
             <span>{t.queueStatus}</span>
           </h4>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#78716C]">
             {queuedEvents.length} events logged on this kirana device
           </span>
         </div>
 
-        <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/60 divide-y divide-slate-800/60 text-xs font-mono">
+        <div className="max-h-48 overflow-y-auto rounded-xl border border-[#E7E5E4] bg-[#F8F7F5] divide-y divide-[#E7E5E4] text-xs font-mono">
           {queuedEvents.length === 0 ? (
-            <div className="p-4 text-center text-slate-500">
+            <div className="p-4 text-center text-[#78716C]">
               No offline events queued. Queue is clear and synchronized.
             </div>
           ) : (
             queuedEvents.slice().reverse().map(evt => (
               <div key={evt.eventId} className="p-2.5 flex items-center justify-between">
                 <div>
-                  <span className="text-indigo-400 font-bold">{evt.type}</span>
-                  <span className="text-slate-500 ml-2">seq#{evt.deviceSeq}</span>
-                  <span className="text-slate-400 ml-2">[{new Date(evt.occurredAt).toLocaleTimeString()}]</span>
+                  <span className="text-[#2563EB] font-bold">{evt.type}</span>
+                  <span className="text-[#78716C] ml-2">seq#{evt.deviceSeq}</span>
+                  <span className="text-[#78716C] ml-2">[{new Date(evt.occurredAt).toLocaleTimeString()}]</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                   evt.status === 'APPLIED'
-                    ? 'bg-emerald-500/20 text-emerald-400'
+                    ? 'bg-emerald-50 text-[#15803D] border border-emerald-200'
                     : evt.status === 'QUEUED'
-                    ? 'bg-amber-500/20 text-amber-300'
-                    : 'bg-slate-800 text-slate-400'
+                    ? 'bg-amber-50 text-[#D97706] border border-amber-200'
+                    : 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]'
                 }`}>
                   {evt.status}
                 </span>
@@ -413,16 +416,16 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
 
       {/* Delivery Receipt Modal */}
       {receiptShipmentId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <PackageCheck className="w-5 h-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white border border-[#E7E5E4] rounded-2xl shadow-2xl p-6 space-y-4 text-[#292524]">
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
+              <h3 className="text-base font-bold text-[#292524] flex items-center gap-2">
+                <PackageCheck className="w-5 h-5 text-[#8B5E3C]" />
                 <span>Confirm Delivery Receipt</span>
               </h3>
               <button
                 onClick={() => setReceiptShipmentId(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-[#78716C] hover:text-[#292524] p-1 rounded-lg hover:bg-[#F8F7F5] cursor-pointer"
               >
                 ✕
               </button>
@@ -430,7 +433,7 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[#292524] mb-1">
                   Cases Accepted:
                 </label>
                 <input
@@ -438,12 +441,12 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
                   min={0}
                   value={acceptedCasesInput}
                   onChange={e => setAcceptedCasesInput(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-bold text-sm"
+                  className="w-full bg-[#F8F7F5] border border-[#E7E5E4] rounded-lg p-2 text-[#292524] font-bold text-sm font-mono focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[#292524] mb-1">
                   Cases Rejected:
                 </label>
                 <input
@@ -451,19 +454,19 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
                   min={0}
                   value={rejectedCasesInput}
                   onChange={e => setRejectedCasesInput(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-bold text-sm"
+                  className="w-full bg-[#F8F7F5] border border-[#E7E5E4] rounded-lg p-2 text-[#292524] font-bold text-sm font-mono focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               {rejectedCasesInput > 0 && (
                 <div className="animate-in fade-in">
-                  <label className="block text-xs font-semibold text-rose-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#DC2626] mb-1">
                     Rejection Reason (FR-12):
                   </label>
                   <select
                     value={rejectionReasonInput}
                     onChange={e => setRejectionReasonInput(e.target.value as RejectionReason)}
-                    className="w-full bg-slate-800 border border-rose-500/60 rounded-lg p-2 text-white text-xs"
+                    className="w-full bg-[#F8F7F5] border border-red-200 rounded-lg p-2 text-[#DC2626] text-xs font-medium focus:outline-none focus:border-[#DC2626] cursor-pointer"
                   >
                     <option value="short_shelf_life">Short Shelf Life (&lt; 70% min)</option>
                     <option value="damaged">Goods Damaged in Transit</option>
@@ -474,16 +477,16 @@ export const KiranaRetailerView: React.FC<KiranaRetailerViewProps> = ({
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E7E5E4]">
               <button
                 onClick={() => setReceiptShipmentId(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                className="px-4 py-2 text-xs font-semibold text-[#292524] bg-white border border-[#8B5E3C] hover:bg-[#E9D8C8]/50 rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmReceipt}
-                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md transition-all"
+                className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg shadow-xs transition-all cursor-pointer"
               >
                 Submit Delivery Receipt
               </button>
