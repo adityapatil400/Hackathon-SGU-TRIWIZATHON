@@ -10,11 +10,11 @@ const buttonVariants = cva(
       variant: {
         default: "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:ring-2 focus-visible:ring-[#DC2626]/40 shadow-xs font-bold",
         outline:
-          "border border-[#E7E5E4] bg-white text-[#292524] hover:bg-[#F8F7F5] focus-visible:ring-2 focus-visible:ring-[#78716C]/30 shadow-xs",
+          "border border-[#E7E5E4] bg-white text-[#1E293B] hover:bg-[#FFF8E7] focus-visible:ring-2 focus-visible:ring-[#64748B]/30 shadow-xs",
         secondary:
-          "bg-white text-[#292524] border border-[#8B5E3C] hover:bg-[#E9D8C8]/40 hover:text-[#8B5E3C] active:bg-[#E9D8C8]/60 focus-visible:ring-2 focus-visible:ring-[#8B5E3C]/40 font-semibold shadow-xs",
+          "bg-white text-[#1E293B] border border-[#2563EB] hover:bg-[#EFF6FF] hover:text-[#2563EB] active:bg-[#DBEAFE] focus-visible:ring-2 focus-visible:ring-[#2563EB]/40 font-semibold shadow-xs",
         ghost:
-          "hover:bg-[#F8F7F5] text-[#292524] hover:text-[#292524] active:bg-[#E7E5E4]/50",
+          "hover:bg-[#FFF8E7] text-[#1E293B] hover:text-[#1E293B] active:bg-[#E7E5E4]/50",
         destructive:
           "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:ring-2 focus-visible:ring-[#DC2626]/40 font-bold shadow-xs",
         info:

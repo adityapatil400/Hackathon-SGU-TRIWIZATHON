@@ -4,8 +4,10 @@ import {
   AlertTriangle,
   XCircle,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
+import { useTranslation } from '../context/TranslationContext';
 
 interface ValidationError {
   row: number;
@@ -14,6 +16,7 @@ interface ValidationError {
 }
 
 export const ImportStudioView: React.FC = () => {
+  const { t, formatNumber } = useTranslation();
   const [selectedKind, setSelectedKind] = useState<string>('batches');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importResult, setImportResult] = useState<{
@@ -104,29 +107,29 @@ export const ImportStudioView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 text-[#292524]">
+    <div className="space-y-6 text-[#1E293B]">
       {/* Top Header */}
       <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-[#292524] tracking-tight">
+            <h2 className="text-xl font-bold text-[#1E293B] tracking-tight">
               Master Data &amp; Batch Inventory Import Studio
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
               J1 Priya &amp; Rohit
             </span>
           </div>
-          <p className="text-xs text-[#78716C] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             CSV/XLSX schema verification • Single Sales Path deduplication • 5% Error Threshold Transactional Rule (FR-02)
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#78716C] font-semibold">Target Entity:</span>
+          <span className="text-xs text-[#64748B] font-semibold">Target Entity:</span>
           <select
             value={selectedKind}
             onChange={e => setSelectedKind(e.target.value)}
-            className="bg-[#F8F7F5] border border-[#E7E5E4] text-[#292524] font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#2563EB] cursor-pointer"
+            className="bg-[#FFF8E7] border border-[#E7E5E4] text-[#1E293B] font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#2563EB] cursor-pointer"
           >
             {sampleDatasets.map(d => (
               <option key={d.kind} value={d.kind}>{d.name}</option>
@@ -136,13 +139,13 @@ export const ImportStudioView: React.FC = () => {
       </div>
 
       {/* 5% Threshold Rule Explanation Box */}
-      <div className="p-4 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#1E40AF] flex items-start gap-3">
+      <div className="p-4 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#1E293B] flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-[#2563EB] shrink-0 mt-0.5" />
         <div>
-          <h4 className="font-bold text-[#1E3A8A]">
+          <h4 className="font-bold text-[#2563EB]">
             Transactional Data Integrity Guarantee (J1 Step 3 &amp; FR-02)
           </h4>
-          <p className="text-[#1E40AF] mt-0.5 leading-relaxed">
+          <p className="text-[#64748B] mt-0.5 leading-relaxed">
             If <strong>&le; 5%</strong> of rows fail validation, the valid rows are committed in one transaction and rejected rows are flagged with file:row diagnostics. If <strong>&gt; 5%</strong> fail, nothing is committed—preventing half-updated stock states from corrupting planning runs.
           </p>
         </div>
@@ -155,10 +158,10 @@ export const ImportStudioView: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-base font-bold text-[#292524]">
+          <h3 className="text-base font-bold text-[#1E293B]">
             Upload Master Data or Inventory Batches
           </h3>
-          <p className="text-xs text-[#78716C] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Drag and drop CSV or XLSX files (max 10MB) or run a demo scenario below
           </p>
         </div>
@@ -174,14 +177,14 @@ export const ImportStudioView: React.FC = () => {
             <span>Load Clean Demo Dataset (100% Valid)</span>
           </button>
 
-          {/* Secondary Action Button: Brown border */}
+          {/* Secondary Action Button */}
           <button
             onClick={() => handleSimulateUpload(true)}
             disabled={isProcessing}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#292524] bg-white border border-[#8B5E3C] hover:bg-[#E9D8C8]/50 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#1E293B] bg-white border border-[#2563EB] hover:bg-[#EFF6FF] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             title="Demonstrate <= 5% error rule where valid rows commit and 6 errors are reported"
           >
-            <AlertTriangle className="w-4 h-4 text-[#D97706]" />
+            <AlertTriangle className="w-4 h-4 text-[#EA580C]" />
             <span>Test 3% Row Errors (Valid Rows Commit)</span>
           </button>
 
@@ -204,7 +207,7 @@ export const ImportStudioView: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E7E5E4] pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[#292524] text-base">{importResult.fileName}</span>
+                <span className="font-bold text-[#1E293B] text-base">{importResult.fileName}</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                   importResult.committed
                     ? 'bg-emerald-50 text-[#15803D] border border-emerald-200'
@@ -213,37 +216,37 @@ export const ImportStudioView: React.FC = () => {
                   {importResult.committed ? 'TRANSACTION COMMITTED' : 'IMPORT ROLLED BACK'}
                 </span>
               </div>
-              <p className="text-[11px] text-[#78716C] font-mono mt-0.5">
+              <p className="text-[11px] text-[#64748B] font-mono mt-0.5">
                 SHA-256: {importResult.sha256}
               </p>
             </div>
 
             <div className="text-right">
-              <span className="text-xs text-[#78716C]">Import Batch ID:</span>
+              <span className="text-xs text-[#64748B]">Import Batch ID:</span>
               <span className="block font-mono text-xs font-bold text-[#2563EB]">{importResult.importId}</span>
             </div>
           </div>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-[#F8F7F5] border border-[#E7E5E4]">
-              <span className="text-[#78716C] font-medium">Total Rows Processed</span>
-              <p className="text-lg font-black text-[#292524] mt-0.5 font-mono">{importResult.totalRows}</p>
+            <div className="p-3 rounded-xl bg-[#FFF8E7] border border-[#E7E5E4]">
+              <span className="text-[#64748B] font-medium">Total Rows Processed</span>
+              <p className="text-lg font-black text-[#1E293B] mt-0.5 font-mono">{formatNumber(importResult.totalRows)}</p>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#F8F7F5] border border-[#E7E5E4]">
-              <span className="text-[#78716C] font-medium">Valid Rows Committed</span>
-              <p className="text-lg font-black text-[#15803D] mt-0.5 font-mono">{importResult.rowsAccepted}</p>
+            <div className="p-3 rounded-xl bg-[#FAF3E0] border border-[#E7E5E4]">
+              <span className="text-[#64748B] font-medium">Valid Rows Committed</span>
+              <p className="text-lg font-black text-[#15803D] mt-0.5 font-mono">{formatNumber(importResult.rowsAccepted)}</p>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#F8F7F5] border border-[#E7E5E4]">
-              <span className="text-[#78716C] font-medium">Rejected Rows</span>
-              <p className="text-lg font-black text-[#DC2626] mt-0.5 font-mono">{importResult.rowsRejected}</p>
+            <div className="p-3 rounded-xl bg-white border border-[#E7E5E4]">
+              <span className="text-[#64748B] font-medium">Rejected Rows</span>
+              <p className="text-lg font-black text-[#DC2626] mt-0.5 font-mono">{formatNumber(importResult.rowsRejected)}</p>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#F8F7F5] border border-[#E7E5E4]">
-              <span className="text-[#78716C] font-medium">Error Rate</span>
-              <p className={`text-lg font-black mt-0.5 font-mono ${importResult.errorRatePct <= 5 ? 'text-[#D97706]' : 'text-[#DC2626]'}`}>
+            <div className="p-3 rounded-xl bg-white border border-[#E7E5E4]">
+              <span className="text-[#64748B] font-medium">Error Rate</span>
+              <p className={`text-lg font-black mt-0.5 font-mono ${importResult.errorRatePct <= 5 ? 'text-[#EA580C]' : 'text-[#DC2626]'}`}>
                 {importResult.errorRatePct.toFixed(1)}% {importResult.errorRatePct <= 5 ? '(≤ 5% Limit)' : '(> 5% Limit)'}
               </p>
             </div>
@@ -258,30 +261,32 @@ export const ImportStudioView: React.FC = () => {
               </h4>
 
               <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-[#E7E5E4] bg-[#F8F7F5] text-[#78716C] font-semibold">
-                      <th className="py-2 px-3">Location</th>
-                      <th className="py-2 px-3">Target Field</th>
-                      <th className="py-2 px-3">Validation Rule Broken</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E7E5E4] font-mono text-[11px]">
-                    {importResult.errors.map((err, idx) => (
-                      <tr key={idx} className="hover:bg-[#F8F7F5]/80 text-[#292524]">
-                        <td className="py-2 px-3 text-[#D97706] font-semibold">
-                          {importResult.fileName}:{err.row}
-                        </td>
-                        <td className="py-2 px-3 text-[#2563EB] font-semibold">
-                          {err.field}
-                        </td>
-                        <td className="py-2 px-3 text-[#DC2626] font-sans">
-                          {err.message}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-[#E7E5E4] bg-[#FAF3E0] text-[#64748B] font-semibold">
+                        <th className="py-2 px-3">Location</th>
+                        <th className="py-2 px-3">Target Field</th>
+                        <th className="py-2 px-3">Validation Rule Broken</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[#E7E5E4] font-mono text-[11px]">
+                      {importResult.errors.map((err, idx) => (
+                        <tr key={idx} className="hover:bg-[#FFF8E7]/50 text-[#1E293B]">
+                          <td className="py-2 px-3 text-[#EA580C] font-semibold whitespace-nowrap">
+                            {importResult.fileName}:{err.row}
+                          </td>
+                          <td className="py-2 px-3 text-[#2563EB] font-semibold whitespace-nowrap">
+                            {err.field}
+                          </td>
+                          <td className="py-2 px-3 text-[#DC2626] font-sans">
+                            {err.message}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

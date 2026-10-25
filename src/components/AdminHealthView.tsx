@@ -11,8 +11,10 @@ import {
 import { INITIAL_SCHEDULED_JOBS, INITIAL_ALERTS } from '../data/mockData';
 import { ScheduledJob, SystemAlert } from '../types';
 import { FlowGridAPI, BackendHealthStatus, OllamaHealthStatus } from '../services/api';
+import { useTranslation } from '../context/TranslationContext';
 
 export const AdminHealthView: React.FC = () => {
+  const { t, formatNumber } = useTranslation();
   const [jobs, setJobs] = useState<ScheduledJob[]>(INITIAL_SCHEDULED_JOBS);
   const [alerts, setAlerts] = useState<SystemAlert[]>(INITIAL_ALERTS);
   const [decisionServiceStatus, setDecisionServiceStatus] = useState<'HEALTHY' | 'DEGRADED' | 'DOWN'>('HEALTHY');
@@ -94,20 +96,20 @@ export const AdminHealthView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 text-[#292524]">
+    <div className="space-y-6 text-[#1E293B]">
       {/* Top Header */}
       <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-[#292524] tracking-tight">
-              System Health &amp; Administrative Observability
+            <h2 className="text-xl font-bold text-[#1E293B] tracking-tight">
+              {t('health.title', 'System Health & Administrative Observability')}
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
               NFR-14 &amp; NFR-15
             </span>
           </div>
-          <p className="text-xs text-[#78716C] mt-1">
-            Real-time decision service latency • node-cron scheduler telemetry • T22 fault injection &amp; SLA compliance
+          <p className="text-xs text-[#64748B] mt-1">
+            {t('health.subtitle', 'Real-time decision service latency • node-cron scheduler telemetry • T22 fault injection & SLA compliance')}
           </p>
         </div>
 
@@ -127,10 +129,10 @@ export const AdminHealthView: React.FC = () => {
           {decisionServiceStatus === 'HEALTHY' ? (
             <button
               onClick={handleSimulateOutage}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#292524] bg-white hover:bg-[#E9D8C8]/50 border border-[#8B5E3C] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#EA580C] bg-[#FFF8E7] hover:bg-[#FAF3E0] border border-[#E7E5E4] transition-all cursor-pointer"
               title="Test T10/T22: Inject decision-service failure and verify last approved plan remains visible"
             >
-              <AlertTriangle className="w-4 h-4 text-[#D97706]" />
+              <AlertTriangle className="w-4 h-4 text-[#EA580C]" />
               <span>Simulate Service Outage (T22)</span>
             </button>
           ) : (
@@ -146,75 +148,75 @@ export const AdminHealthView: React.FC = () => {
       </div>
 
       {seedResult && (
-        <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#1E40AF] flex items-center justify-between shadow-xs">
+        <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#2563EB] flex items-center justify-between shadow-xs">
           <span className="font-mono">{seedResult}</span>
-          <button onClick={() => setSeedResult(null)} className="text-[#78716C] hover:text-[#292524] text-xs cursor-pointer">Dismiss</button>
+          <button onClick={() => setSeedResult(null)} className="text-[#64748B] hover:text-[#1E293B] text-xs cursor-pointer">Dismiss</button>
         </div>
       )}
 
       {/* Decision Service & Infrastructure Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#78716C]">
-            <span className="flex items-center gap-1.5 font-semibold text-[#292524]">
+          <div className="flex items-center justify-between text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 font-semibold text-[#1E293B]">
               <Cpu className="w-4 h-4 text-[#2563EB]" />
               <span>FastAPI Optimization</span>
             </span>
-            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D] animate-pulse' : 'bg-amber-500'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D] animate-pulse' : 'bg-[#EAB308]'}`} />
           </div>
-          <div className="text-2xl font-black text-[#292524] font-mono">
+          <div className="text-2xl font-black text-[#1E293B] font-mono">
             {backendHealth?.isOnline ? 'ONLINE' : decisionServiceStatus}
           </div>
-          <p className="text-[11px] text-[#78716C]">
+          <p className="text-[11px] text-[#64748B]">
             FMCG Engine + SQLite DB • Latency: <strong className="text-[#15803D]">{backendHealth?.latencyMs !== undefined ? `${backendHealth.latencyMs}ms` : '<1ms'}</strong>
           </p>
-          <p className="text-[10px] text-[#78716C]">Fault-injection controls below simulate UI state; they do not alter the backend.</p>
+          <p className="text-[10px] text-[#64748B]">Fault-injection controls below simulate UI state; they do not alter the backend.</p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#78716C]">
-            <span className="flex items-center gap-1.5 font-semibold text-[#292524]">
-              <Server className="w-4 h-4 text-[#8B5E3C]" />
+          <div className="flex items-center justify-between text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 font-semibold text-[#1E293B]">
+              <Server className="w-4 h-4 text-[#2563EB]" />
               <span>Ollama GenAI Engine</span>
             </span>
-            <span className={`w-2.5 h-2.5 rounded-full ${ollamaStatus?.isConnected ? 'bg-[#8B5E3C]' : 'bg-[#78716C]'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${ollamaStatus?.isConnected ? 'bg-[#15803D]' : 'bg-[#64748B]'}`} />
           </div>
-          <div className="text-2xl font-black text-[#292524] font-mono">
+          <div className="text-2xl font-black text-[#1E293B] font-mono">
             {ollamaStatus?.isConnected ? 'ACTIVE' : 'FALLBACK'}
           </div>
-          <p className="text-[11px] text-[#78716C]">
+          <p className="text-[11px] text-[#64748B]">
             {ollamaStatus?.isConnected ? `Model: ${ollamaStatus.model}` : 'Rule-based NL rationale active'}
           </p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#78716C]">
-            <span className="flex items-center gap-1.5 font-semibold text-[#292524]">
+          <div className="flex items-center justify-between text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 font-semibold text-[#1E293B]">
               <Server className="w-4 h-4 text-[#15803D]" />
               <span>SQLite & Vector Store</span>
             </span>
-            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D]' : 'bg-[#78716C]'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${backendHealth?.isOnline ? 'bg-[#15803D]' : 'bg-[#64748B]'}`} />
           </div>
-          <div className="text-2xl font-black text-[#292524] font-mono">
+          <div className="text-2xl font-black text-[#1E293B] font-mono">
             {backendHealth?.isOnline ? (backendHealth.database.toUpperCase()) : 'CONNECTED'}
           </div>
-          <p className="text-[11px] text-[#78716C]">
+          <p className="text-[11px] text-[#64748B]">
             SQLite (Alembic Head) + FAISS Index (100 SKUs)
           </p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-[#E7E5E4] space-y-2 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#78716C]">
-            <span className="flex items-center gap-1.5 font-semibold text-[#292524]">
-              <Bell className="w-4 h-4 text-[#D97706]" />
+          <div className="flex items-center justify-between text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 font-semibold text-[#1E293B]">
+              <Bell className="w-4 h-4 text-[#EA580C]" />
               <span>Active System Alerts</span>
             </span>
-            <span className="text-[#D97706] font-bold">{alerts.filter(a => a.active).length} Open</span>
+            <span className="text-[#EA580C] font-bold">{alerts.filter(a => a.active).length} Open</span>
           </div>
-          <div className="text-2xl font-black text-[#D97706] font-mono">
+          <div className="text-2xl font-black text-[#EA580C] font-mono">
             {alerts.filter(a => a.active).length} ALERT(S)
           </div>
-          <p className="text-[11px] text-[#78716C]">
+          <p className="text-[11px] text-[#64748B]">
             Evaluated every 30s by scheduler (NFR-15, Section 9.6)
           </p>
         </div>
@@ -222,8 +224,8 @@ export const AdminHealthView: React.FC = () => {
 
       {/* Active Alerts Center */}
       <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
-        <h3 className="text-base font-bold text-[#292524] flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-[#D97706]" />
+        <h3 className="text-base font-bold text-[#1E293B] flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-[#EA580C]" />
           <span>Observability Alert Center (Section 9.6)</span>
         </h3>
 
@@ -235,28 +237,28 @@ export const AdminHealthView: React.FC = () => {
                 alert.active
                   ? alert.severity === 'critical'
                     ? 'bg-red-50/70 border-red-200'
-                    : 'bg-amber-50/70 border-amber-200'
-                  : 'bg-[#F8F7F5] border-[#E7E5E4] opacity-75'
+                    : 'bg-[#FFF8E7] border-[#E7E5E4]'
+                  : 'bg-[#FAF3E0]/40 border-[#E7E5E4] opacity-75'
               }`}
             >
               <div>
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                    alert.severity === 'critical' ? 'bg-red-100 text-[#DC2626]' : 'bg-amber-100 text-[#D97706]'
+                    alert.severity === 'critical' ? 'bg-red-100 text-[#DC2626]' : 'bg-amber-100 text-[#EA580C]'
                   }`}>
                     {alert.rule}
                   </span>
-                  <span className="text-xs font-bold text-[#292524]">{alert.message}</span>
+                  <span className="text-xs font-bold text-[#1E293B]">{alert.message}</span>
                   {!alert.active && (
-                    <span className="text-[10px] text-[#78716C] font-bold uppercase">(CLOSED)</span>
+                    <span className="text-[10px] text-[#64748B] font-bold uppercase">(CLOSED)</span>
                   )}
                 </div>
-                <p className="text-xs text-[#78716C] mt-1">{alert.details}</p>
-                <span className="text-[10px] text-[#78716C] mt-0.5 block font-mono">Opened: {new Date(alert.openedAt).toLocaleTimeString()}</span>
+                <p className="text-xs text-[#64748B] mt-1">{alert.details}</p>
+                <span className="text-[10px] text-[#64748B] mt-0.5 block font-mono">Opened: {new Date(alert.openedAt).toLocaleTimeString()}</span>
               </div>
 
               <span className={`px-2.5 py-1 rounded text-xs font-bold shrink-0 font-mono ${
-                alert.active ? 'bg-amber-100 text-[#D97706] border border-amber-200' : 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]'
+                alert.active ? 'bg-amber-100 text-[#EA580C] border border-amber-200' : 'bg-[#FFF8E7] text-[#64748B] border border-[#E7E5E4]'
               }`}>
                 {alert.active ? 'ACTIVE ALERT' : 'RESOLVED'}
               </span>
@@ -268,57 +270,59 @@ export const AdminHealthView: React.FC = () => {
       {/* Scheduled Jobs Table (NFR-14) */}
       <div className="bg-white p-6 rounded-2xl border border-[#E7E5E4] space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#292524] flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#8B5E3C]" />
+          <h3 className="text-base font-bold text-[#1E293B] flex items-center gap-2">
+            <Clock className="w-5 h-5 text-[#2563EB]" />
             <span>Scheduled Housekeeping Cron Jobs (NFR-14 &amp; T19)</span>
           </h3>
-          <span className="text-xs text-[#78716C]">All jobs idempotent</span>
+          <span className="text-xs text-[#64748B]">All jobs idempotent</span>
         </div>
 
         <div className="rounded-xl border border-[#E7E5E4] overflow-hidden bg-white shadow-xs">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-[#E7E5E4] bg-[#F8F7F5] text-[#78716C] font-semibold uppercase">
-                <th className="py-2.5 px-3">Job Name</th>
-                <th className="py-2.5 px-3">Frequency</th>
-                <th className="py-2.5 px-3">Description</th>
-                <th className="py-2.5 px-3">Last Finished</th>
-                <th className="py-2.5 px-3 text-center">Status</th>
-                <th className="py-2.5 px-3 text-right">Manual Run</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E7E5E4]">
-              {jobs.map(j => (
-                <tr key={j.job} className="hover:bg-[#F8F7F5]/80 transition-colors">
-                  <td className="py-3 px-3 font-mono font-bold text-[#2563EB]">
-                    {j.job}
-                  </td>
-                  <td className="py-3 px-3 text-[#292524] font-medium">
-                    {j.frequency}
-                  </td>
-                  <td className="py-3 px-3 text-[#78716C] text-[11px] max-w-xs leading-relaxed">
-                    {j.description}
-                  </td>
-                  <td className="py-3 px-3 text-[#78716C] font-mono">
-                    {new Date(j.lastFinishedAt).toLocaleTimeString()}
-                  </td>
-                  <td className="py-3 px-3 text-center">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200">
-                      {j.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      onClick={() => handleTriggerJob(j.job)}
-                      className="text-[11px] font-semibold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] px-2.5 py-1 rounded transition-colors cursor-pointer"
-                    >
-                      Trigger Now
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-[#E7E5E4] bg-[#FAF3E0] text-[#64748B] font-semibold uppercase">
+                  <th className="py-2.5 px-3">Job Name</th>
+                  <th className="py-2.5 px-3">Frequency</th>
+                  <th className="py-2.5 px-3">Description</th>
+                  <th className="py-2.5 px-3">Last Finished</th>
+                  <th className="py-2.5 px-3 text-center">Status</th>
+                  <th className="py-2.5 px-3 text-right">Manual Run</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#E7E5E4]">
+                {jobs.map(j => (
+                  <tr key={j.job} className="hover:bg-[#FFF8E7]/50 transition-colors">
+                    <td className="py-3 px-3 font-mono font-bold text-[#2563EB] whitespace-nowrap">
+                      {j.job}
+                    </td>
+                    <td className="py-3 px-3 text-[#1E293B] font-medium whitespace-nowrap">
+                      {j.frequency}
+                    </td>
+                    <td className="py-3 px-3 text-[#64748B] text-[11px] max-w-xs leading-relaxed">
+                      {j.description}
+                    </td>
+                    <td className="py-3 px-3 text-[#64748B] font-mono whitespace-nowrap">
+                      {new Date(j.lastFinishedAt).toLocaleTimeString()}
+                    </td>
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200">
+                        {j.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => handleTriggerJob(j.job)}
+                        className="text-[11px] font-semibold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] px-2.5 py-1 rounded transition-colors cursor-pointer"
+                      >
+                        Trigger Now
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

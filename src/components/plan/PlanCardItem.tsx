@@ -6,11 +6,11 @@ import {
   Edit3,
   CheckCircle2,
   Copy,
-  Check,
-  Calendar
+  Check
 } from 'lucide-react';
 import { AllocationLine, Product, Warehouse, Retailer, InventoryBatch } from '../../types';
 import { ShelfLifeIndicator } from './ShelfLifeIndicator';
+import { useTranslation } from '../../context/TranslationContext';
 
 interface PlanCardItemProps {
   line: AllocationLine;
@@ -35,6 +35,7 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
   onApprove,
   isApproving = false,
 }) => {
+  const { t, formatCurrency, formatNumber } = useTranslation();
   const [copiedSku, setCopiedSku] = useState(false);
 
   const handleCopySku = (e: React.MouseEvent) => {
@@ -46,37 +47,37 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
 
   const statusMap: Record<string, { label: string; className: string }> = {
     PROPOSED: {
-      label: 'PROPOSED',
-      className: 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]',
+      label: t('proposed') || 'PROPOSED',
+      className: 'bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA] font-semibold',
     },
     APPROVED: {
-      label: 'RESERVED',
+      label: t('reserved') || 'RESERVED',
       className: 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] font-semibold',
     },
     OVERRIDDEN: {
-      label: 'MODIFIED',
+      label: t('modified') || 'MODIFIED',
       className: 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold',
     },
     STALE: {
-      label: '409 STALE',
-      className: 'bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] font-bold animate-pulse',
+      label: t('stale') || '409 STALE',
+      className: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] font-bold animate-pulse',
     },
     DISPATCHED: {
-      label: 'DISPATCHED',
-      className: 'bg-[#E9D8C8]/60 text-[#8B5E3C] border border-[#8B5E3C]/30 font-semibold',
+      label: t('dispatched') || 'DISPATCHED',
+      className: 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0] font-semibold',
     },
     CANCELLED: {
-      label: 'CANCELLED',
+      label: t('cancelled') || 'CANCELLED',
       className: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
     },
     EXPIRED: {
-      label: 'EXPIRED',
+      label: t('expired') || 'EXPIRED',
       className: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
     },
   };
   const statusConfig = statusMap[line.status] || {
     label: line.status,
-    className: 'bg-[#F8F7F5] text-[#78716C] border border-[#E7E5E4]',
+    className: 'bg-[#FAF3E0] text-[#64748B] border border-[#E7E5E4]',
   };
 
   const expiryDate = batch?.expiryDate;
@@ -85,25 +86,25 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
     <div
       className={`p-4 rounded-xl border transition-all space-y-3 bg-white ${
         line.status === 'STALE'
-          ? 'border-amber-300 bg-amber-50/20'
+          ? 'border-[#FECACA] bg-[#FEF2F2]/30'
           : line.status === 'OVERRIDDEN'
-          ? 'border-blue-300 bg-blue-50/15'
+          ? 'border-[#BFDBFE] bg-[#EFF6FF]/30'
           : line.status === 'APPROVED'
-          ? 'border-emerald-300 bg-emerald-50/15'
-          : 'border-[#E7E5E4] hover:border-[#8B5E3C]/60 hover:shadow-xs'
+          ? 'border-[#BBF7D0] bg-[#F0FDF4]/30'
+          : 'border-[#E7E5E4] hover:border-[#2563EB]/40 hover:shadow-xs'
       }`}
     >
       {/* Card Header: Route & Status */}
       <div className="flex items-start justify-between gap-2 border-b border-[#E7E5E4] pb-2.5">
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#292524]">
-            <Building className="w-3.5 h-3.5 text-[#8B5E3C] shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1E293B]">
+            <Building className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
             <span>{warehouse?.city || line.warehouseId} Hub</span>
-            <span className="text-[#78716C]">→</span>
+            <span className="text-[#64748B]">→</span>
             <Store className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
             <span className="truncate max-w-[150px]">{retailer?.name || line.retailerId}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-[#78716C]">
+          <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
             <span>{retailer?.city}</span>
             <span>•</span>
             <span className="text-[#2563EB] font-semibold uppercase">Class {retailer?.serviceClass}</span>
@@ -120,28 +121,28 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
       {/* Product & SKU Row */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 min-w-0">
-          <h4 className="text-xs font-bold text-[#292524] truncate" title={product?.name}>
+          <h4 className="text-xs font-bold text-[#1E293B] truncate" title={product?.name}>
             {product?.name || line.sku}
           </h4>
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={handleCopySku}
               type="button"
-              className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-[#292524] bg-[#F8F7F5] hover:bg-[#E9D8C8]/60 px-2 py-0.5 rounded border border-[#E7E5E4] transition-colors whitespace-nowrap cursor-pointer select-all"
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-[#1E293B] bg-[#FFF8E7] hover:bg-[#FAF3E0] px-2 py-0.5 rounded border border-[#E7E5E4] transition-colors whitespace-nowrap cursor-pointer select-all"
               title="Click to copy SKU code"
             >
               <span>{line.sku}</span>
               {copiedSku ? (
                 <Check className="w-3 h-3 text-[#15803D]" />
               ) : (
-                <Copy className="w-3 h-3 text-[#78716C]" />
+                <Copy className="w-3 h-3 text-[#64748B]" />
               )}
             </button>
-            <span className="font-mono text-[10px] text-[#78716C] bg-[#F8F7F5] px-1.5 py-0.5 rounded border border-[#E7E5E4] whitespace-nowrap">
+            <span className="font-mono text-[10px] text-[#64748B] bg-[#FAF3E0] px-1.5 py-0.5 rounded border border-[#E7E5E4] whitespace-nowrap">
               {line.batchNo}
             </span>
             {expiryDate && (
-              <span className="font-mono text-[10px] text-[#8B5E3C] bg-[#E9D8C8]/50 px-1.5 py-0.5 rounded border border-[#8B5E3C]/30 whitespace-nowrap">
+              <span className="font-mono text-[10px] text-[#EAB308] bg-[#FEF9C3] px-1.5 py-0.5 rounded border border-[#FEF08A] whitespace-nowrap font-bold">
                 Exp: {expiryDate}
               </span>
             )}
@@ -160,19 +161,19 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
       </div>
 
       {/* Quantitative Details Grid */}
-      <div className="grid grid-cols-3 gap-2 bg-[#F8F7F5] p-2.5 rounded-lg border border-[#E7E5E4] text-center">
+      <div className="grid grid-cols-3 gap-2 bg-[#FFF8E7]/60 p-2.5 rounded-lg border border-[#E7E5E4] text-center">
         <div>
-          <span className="text-[10px] text-[#78716C] block font-medium">Cases</span>
-          <span className="text-xs font-black text-[#292524] font-mono">{line.cases} cs</span>
-          <span className="text-[9px] text-[#78716C] block">({line.units} u)</span>
+          <span className="text-[10px] text-[#64748B] block font-medium">{t('cases') || 'Cases'}</span>
+          <span className="text-xs font-black text-[#1E293B] font-mono">{formatNumber(line.cases)} cs</span>
+          <span className="text-[9px] text-[#64748B] block">({formatNumber(line.units)} u)</span>
         </div>
         <div>
-          <span className="text-[10px] text-[#78716C] block font-medium">Route Freight</span>
-          <span className="text-xs font-bold text-[#8B5E3C] font-mono">₹{line.freightRupees}</span>
+          <span className="text-[10px] text-[#64748B] block font-medium">{t('freightCost') || 'Freight'}</span>
+          <span className="text-xs font-bold text-[#1E293B] font-mono">{formatCurrency(line.freightRupees)}</span>
         </div>
         <div>
-          <span className="text-[10px] text-[#78716C] block font-medium">Arrival ETA</span>
-          <span className="text-xs font-semibold text-[#78716C] font-mono">{line.arrivalDate}</span>
+          <span className="text-[10px] text-[#64748B] block font-medium">Arrival ETA</span>
+          <span className="text-xs font-semibold text-[#64748B] font-mono">{line.arrivalDate}</span>
         </div>
       </div>
 
@@ -180,7 +181,7 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
       {line.override && (
         <div className="text-[10px] text-[#2563EB] bg-[#EFF6FF] p-1.5 rounded border border-[#BFDBFE] flex items-center justify-between">
           <span>Overridden: {line.override.originalCases}cs → {line.override.newCases}cs</span>
-          <span className="text-[#78716C] truncate max-w-[140px] italic">"{line.override.reason}"</span>
+          <span className="text-[#64748B] truncate max-w-[140px] italic">"{line.override.reason}"</span>
         </div>
       )}
 
@@ -194,20 +195,20 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
           title="Inspect explainable AI reasoning and value tiers"
         >
           <HelpCircle className="w-3.5 h-3.5 text-[#2563EB]" />
-          <span>Explain</span>
+          <span>{t('explain') || 'Explain'}</span>
         </button>
 
         {/* Secondary Edit / Override Button */}
         <button
           type="button"
           onClick={() => onEdit(line)}
-          className="p-1.5 rounded-lg text-[#292524] hover:text-[#8B5E3C] bg-white hover:bg-[#E9D8C8]/40 border border-[#8B5E3C]/40 hover:border-[#8B5E3C] transition-colors cursor-pointer shadow-xs"
+          className="p-1.5 rounded-lg text-[#1E293B] hover:text-[#2563EB] bg-white hover:bg-[#FAF3E0] border border-[#E7E5E4] hover:border-[#2563EB] transition-colors cursor-pointer shadow-xs"
           title="Override quantity with mandatory justification"
         >
-          <Edit3 className="w-3.5 h-3.5 text-[#8B5E3C]" />
+          <Edit3 className="w-3.5 h-3.5 text-[#64748B]" />
         </button>
 
-        {/* Primary Action Approve Button */}
+        {/* Primary Action Approve Button: Red */}
         {line.status !== 'APPROVED' && line.status !== 'STALE' && (
           <button
             type="button"
@@ -217,16 +218,17 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
             title="Approve line and reserve stock atomically"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Approve</span>
+            <span>{t('approve') || 'Approve'}</span>
           </button>
         )}
 
         {line.status === 'APPROVED' && (
-          <span className="flex-1 flex items-center justify-center gap-1 text-[11px] font-semibold text-[#15803D] bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">
-            <Check className="w-3 h-3 text-[#15803D]" /> Locked
+          <span className="flex-1 flex items-center justify-center gap-1 text-[11px] font-semibold text-[#15803D] bg-[#F0FDF4] px-2 py-1 rounded-lg border border-[#BBF7D0]">
+            <Check className="w-3 h-3 text-[#15803D]" /> {t('locked') || 'Locked'}
           </span>
         )}
       </div>
     </div>
   );
 };
+

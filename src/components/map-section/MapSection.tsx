@@ -25,9 +25,9 @@ const CATEGORY_LABEL = "Channel";
 const CATEGORY_COLORS: Record<string, string> = {
   "Modern Trade": "#2563EB", // blue accent
   Distributor: "#15803D", // green success
-  Kirana: "#8B5E3C", // brown accent
+  Kirana: "#EA580C", // orange warning/attention accent
 };
-const FALLBACK_COLORS = ["#2563EB", "#8B5E3C", "#D97706", "#15803D", "#DC2626"];
+const FALLBACK_COLORS = ["#2563EB", "#EA580C", "#EAB308", "#15803D", "#DC2626"];
 
 const numberFormat = new Intl.NumberFormat("en-IN");
 const formatValue = (n: number) => numberFormat.format(n);
@@ -165,29 +165,29 @@ export function MapSection() {
   }, []);
 
   return (
-    <Card className="bg-white border-[#E7E5E4] shadow-xs text-[#292524]">
+    <Card className="bg-white border-[#E7E5E4] shadow-xs text-[#1E293B]">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-bold text-[#292524]">
+              <CardTitle className="text-base font-bold text-[#1E293B]">
                 Distribution Network & Retailer Demand Map
               </CardTitle>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] border border-emerald-200">
                 🛰️ Satellite View
               </span>
             </div>
-            <CardDescription className="text-xs text-[#78716C] mt-0.5">
+            <CardDescription className="text-xs text-[#64748B] mt-0.5">
               {VALUE_LABEL} across Maharashtra warehouses, supply corridors, and retail kiranas. Switch between Satellite, Hybrid, and Map modes.
             </CardDescription>
           </div>
         </div>
         <ul className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 pt-1.5 text-xs">
-          <li className="flex items-center gap-1.5 font-medium text-[#292524]">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#8B5E3C] border border-white" aria-hidden />
+          <li className="flex items-center gap-1.5 font-medium text-[#1E293B]">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#2563EB] border border-white" aria-hidden />
             <span>Warehouse Hubs (3)</span>
           </li>
-          <li className="flex items-center gap-1.5 font-medium text-[#292524]">
+          <li className="flex items-center gap-1.5 font-medium text-[#1E293B]">
             <span className="w-4 h-0.5 bg-[#38BDF8] rounded" aria-hidden />
             <span>Supply Corridors</span>
           </li>

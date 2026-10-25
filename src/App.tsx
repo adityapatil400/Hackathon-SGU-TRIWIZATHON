@@ -15,6 +15,7 @@ import { MapSection } from './components/map-section/MapSection';
 import { DemoWalkthroughModal } from './components/DemoWalkthroughModal';
 import { WhatIfSimulatorModal } from './components/WhatIfSimulatorModal';
 import { Sun, Moon } from 'lucide-react';
+import { useTranslation } from './context/TranslationContext';
 
 import {
   INITIAL_PRODUCTS,
@@ -502,10 +503,11 @@ export const App: React.FC = () => {
   };
 
   const currentKirana = retailers.find(r => r.id === 'RET-GAN') || retailers[0];
+  const { t } = useTranslation();
 
   return (
     <div className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-200 ${
-      theme === 'night' ? 'theme-night bg-slate-950 text-slate-100' : 'theme-day bg-[#F8F7F5] text-[#292524]'
+      theme === 'night' ? 'theme-night bg-slate-950 text-slate-100' : 'theme-day bg-[#FFF8E7] text-[#1E293B]'
     }`}>
       {/* Left Sidebar Navigation */}
       <Navbar
@@ -529,33 +531,33 @@ export const App: React.FC = () => {
         <div className={`hidden lg:flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-6 py-2.5 border-b text-xs transition-colors duration-200 ${
           theme === 'night'
             ? 'bg-slate-900/40 border-slate-800/80 text-slate-400'
-            : 'bg-white border-[#E7E5E4] text-[#78716C] shadow-xs'
+            : 'bg-white border-[#E7E5E4] text-[#64748B] shadow-xs'
         }`}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className={`font-bold capitalize ${theme === 'night' ? 'text-slate-200' : 'text-[#292524]'}`}>
-              {activeTab === 'plans' ? 'Allocation Plan & AI Engine' :
-               activeTab === 'forecast' ? 'Demand Forecasting Intelligence' :
-               activeTab === 'map' ? 'Demand Map Intelligence' :
-               activeTab === 'benchmark' ? 'Baseline Impact Benchmark' :
-               activeTab === 'dispatch' ? 'Smart Delivery Agent & Native Driver Dispatch' :
-               activeTab === 'warehouse' ? 'Warehouse Picking & Operations' :
-               activeTab === 'retailer' ? 'Kirana Field POS & Capture' :
-               activeTab === 'import' ? 'Master Data Import Studio' :
-               'System Health & Monitoring'}
+            <span className={`font-bold capitalize ${theme === 'night' ? 'text-slate-200' : 'text-[#1E293B]'}`}>
+              {activeTab === 'plans' ? t('nav.plans', 'Allocation Plan & AI Engine') :
+               activeTab === 'forecast' ? t('nav.forecast', 'Demand Forecasting Intelligence') :
+               activeTab === 'map' ? t('nav.map', 'Demand Map Intelligence') :
+               activeTab === 'benchmark' ? t('nav.benchmark', 'Baseline Impact Benchmark') :
+               activeTab === 'dispatch' ? t('nav.dispatch', 'Smart Delivery Agent & Native Driver Dispatch') :
+               activeTab === 'warehouse' ? t('nav.warehouse', 'Warehouse Picking & Operations') :
+               activeTab === 'retailer' ? t('nav.retailer', 'Kirana Field POS & Capture') :
+               activeTab === 'import' ? t('nav.import', 'Master Data Import Studio') :
+               t('nav.health', 'System Health & Monitoring')}
             </span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
-            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>{PLAN_HORIZON_DAYS}-day planning horizon • W43</span>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>{t('header.horizon', '7-day planning horizon • W43')}</span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
-            <span className={`font-mono text-[11px] font-semibold ${theme === 'night' ? 'text-indigo-400' : 'text-[#8B5E3C]'}`}>
-              Maharashtra Logistics Grid (Pune Hub, Satara, Kolhapur)
+            <span className={`font-mono text-[11px] font-semibold ${theme === 'night' ? 'text-indigo-400' : 'text-[#2563EB]'}`}>
+              {t('header.network', 'Maharashtra Logistics Grid (Pune Hub, Satara, Kolhapur)')}
             </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>Avg Kirana Margin: <strong className="text-[#15803D]">3–5%</strong></span>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>{t('header.margin', 'Avg Kirana Margin: 3–5%')}</span>
             <span className={theme === 'night' ? 'text-slate-600' : 'text-[#E7E5E4]'}>•</span>
-            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#78716C]'}>
-              Solve Time: <strong className={theme === 'night' ? 'text-indigo-400' : 'text-[#2563EB]'}>{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong>
+            <span className={theme === 'night' ? 'text-slate-400' : 'text-[#64748B]'}>
+              {t('header.solveTime', 'Solve Time')}: <strong className={theme === 'night' ? 'text-indigo-400' : 'text-[#15803D]'}>{planRun?.solveSeconds ? `${(planRun.solveSeconds * 1000).toFixed(2)}ms` : '<1ms'}</strong>
             </span>
             {/* Quick Theme Toggle Button */}
             <button
@@ -564,18 +566,18 @@ export const App: React.FC = () => {
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs transition-all cursor-pointer shadow-xs ${
                 theme === 'night'
                   ? 'bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700'
-                  : 'bg-[#E9D8C8] text-[#8B5E3C] border border-[#8B5E3C]/30 hover:bg-[#8B5E3C] hover:text-white'
+                  : 'bg-[#FFF8E7] text-[#1E293B] border border-[#E7E5E4] hover:bg-[#FAF3E0]'
               }`}
             >
               {theme === 'night' ? (
                 <>
                   <Moon className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
-                  <span>Night Mode</span>
+                  <span>{t('header.nightMode', 'Night Mode')}</span>
                 </>
               ) : (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-[#8B5E3C]" />
-                  <span>Day Mode</span>
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{t('header.dayMode', 'Day Mode')}</span>
                 </>
               )}
             </button>
@@ -660,15 +662,15 @@ export const App: React.FC = () => {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-[#E7E5E4] bg-white py-5 text-xs text-[#78716C] mt-auto">
+        <footer className="border-t border-[#E7E5E4] bg-white py-5 text-xs text-[#64748B] mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="font-medium">
+            <p className="font-medium text-[#1E293B]">
               FlowGrid Distribution Intelligence &amp; Inventory Optimization Engine • Problem Statement 2 (FMCG)
             </p>
-            <p className="text-[11px] text-[#78716C]">
+            <p className="text-[11px] text-[#64748B]">
               Greedy Marginal Allocation • Scikit-learn Quantile ML • React 19 • Offline Resilient Event Queue
             </p>
-            <a href="/" className="text-indigo-300 hover:text-white transition-colors">
+            <a href="/" className="text-[#2563EB] hover:text-[#1E293B] font-semibold transition-colors">
               Landing page
             </a>
           </div>

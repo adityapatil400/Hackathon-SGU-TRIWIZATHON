@@ -129,8 +129,8 @@ export function DataMap({
     <div className="relative h-full w-full overflow-hidden rounded-xl border border-[#E7E5E4] shadow-xs">
       {/* Google Maps Layer Switcher & Route Toggle Toolbar */}
       <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 p-1 bg-white/95 backdrop-blur-md border border-[#E7E5E4] rounded-xl shadow-md text-xs font-semibold">
-        <div className="flex items-center gap-0.5 px-1 text-[11px] font-bold text-[#78716C] border-r border-[#E7E5E4] pr-2 mr-0.5">
-          <Layers className="w-3.5 h-3.5 text-[#8B5E3C]" />
+        <div className="flex items-center gap-0.5 px-1 text-[11px] font-bold text-[#64748B] border-r border-[#E7E5E4] pr-2 mr-0.5">
+          <Layers className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>Layer:</span>
         </div>
 
@@ -142,7 +142,7 @@ export function DataMap({
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
             mapTypeId === "satellite"
               ? "bg-[#DC2626] text-white shadow-xs"
-              : "text-[#292524] hover:bg-[#F8F7F5]"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
           title="Google Maps Satellite Mode (Default)"
         >
@@ -157,7 +157,7 @@ export function DataMap({
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
             mapTypeId === "hybrid"
               ? "bg-[#DC2626] text-white shadow-xs"
-              : "text-[#292524] hover:bg-[#F8F7F5]"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
           title="Google Maps Hybrid Mode (Satellite + Roads & Labels)"
         >
@@ -172,7 +172,7 @@ export function DataMap({
             "px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
             mapTypeId === "roadmap" || mapTypeId === "map"
               ? "bg-[#DC2626] text-white shadow-xs"
-              : "text-[#292524] hover:bg-[#F8F7F5]"
+              : "text-[#1E293B] hover:bg-[#FFF8E7]"
           )}
           title="Standard Street Map"
         >
@@ -189,7 +189,7 @@ export function DataMap({
             "px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer",
             showRoutes
               ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]"
-              : "text-[#78716C] hover:bg-[#F8F7F5]"
+              : "text-[#64748B] hover:bg-[#FFF8E7]"
           )}
           title="Toggle Distribution Corridor Routes"
         >
@@ -246,7 +246,7 @@ export function DataMap({
                   role="img"
                   aria-label={`${wh.name}: Warehouse Hub`}
                   className={cn(
-                    "flex items-center justify-center rounded-lg border-2 border-white shadow-xl bg-[#8B5E3C] text-white p-1 transition-transform duration-150 ease-out cursor-pointer hover:scale-125",
+                    "flex items-center justify-center rounded-lg border-2 border-white shadow-xl bg-[#2563EB] text-white p-1 transition-transform duration-150 ease-out cursor-pointer hover:scale-125",
                     isSelected && "ring-4 ring-[#DC2626] scale-125 shadow-2xl"
                   )}
                   style={{ width: 28, height: 28 }}
@@ -256,16 +256,16 @@ export function DataMap({
                 </div>
               </MarkerContent>
               <MarkerPopup closeButton offset={18}>
-                <div className="space-y-1.5 pr-3 text-[#292524]">
+                <div className="space-y-1.5 pr-3 text-[#1E293B]">
                   <div className="flex items-center gap-1.5">
-                    <span className="p-1 rounded bg-[#8B5E3C] text-white">
+                    <span className="p-1 rounded bg-[#2563EB] text-white">
                       <Building2 className="w-3.5 h-3.5" />
                     </span>
                     <div>
-                      <p className="leading-snug font-bold text-sm text-[#292524]">
+                      <p className="leading-snug font-bold text-sm text-[#1E293B]">
                         {wh.name}
                       </p>
-                      <p className="text-[10px] text-[#78716C] uppercase font-semibold">
+                      <p className="text-[10px] text-[#64748B] uppercase font-semibold">
                         Primary Warehouse • {wh.city}
                       </p>
                     </div>
@@ -273,21 +273,21 @@ export function DataMap({
 
                   <div className="pt-1.5 border-t border-[#E7E5E4] space-y-1 text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="text-[#78716C]">Cycle Capacity:</span>
-                      <span className="font-mono font-bold text-[#292524]">
+                      <span className="text-[#64748B]">Cycle Capacity:</span>
+                      <span className="font-mono font-bold text-[#1E293B]">
                         {wh.capacityCasesPerCycle.toLocaleString()} cases
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#78716C]">Current Utilization:</span>
+                      <span className="text-[#64748B]">Current Utilization:</span>
                       <span className="font-mono font-bold text-[#15803D]">
                         {(wh.utilizationCases ?? 0).toLocaleString()} cases (
                         {Math.round(((wh.utilizationCases ?? 0) / wh.capacityCasesPerCycle) * 100)}%)
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#78716C]">Depot Manager:</span>
-                      <span className="font-medium text-[#292524]">{wh.managerName}</span>
+                      <span className="text-[#64748B]">Depot Manager:</span>
+                      <span className="font-medium text-[#1E293B]">{wh.managerName}</span>
                     </div>
                   </div>
                 </div>
@@ -321,9 +321,9 @@ export function DataMap({
                 />
               </MarkerContent>
               <MarkerPopup closeButton offset={size / 2 + 8}>
-                <div className="space-y-1.5 pr-4 text-[#292524]">
-                  <p className="leading-snug font-bold text-sm text-[#292524]">{row.name}</p>
-                  <p className="text-[#78716C] flex items-center gap-1.5 text-xs">
+                <div className="space-y-1.5 pr-4 text-[#1E293B]">
+                  <p className="leading-snug font-bold text-sm text-[#1E293B]">{row.name}</p>
+                  <p className="text-[#64748B] flex items-center gap-1.5 text-xs">
                     <span
                       className="size-2 rounded-full"
                       style={{ backgroundColor: row.color }}
@@ -332,14 +332,14 @@ export function DataMap({
                     <span className="font-semibold">{row.category}</span> · {row.city}
                   </p>
                   <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-[#E7E5E4]">
-                    <span className="text-base font-extrabold text-[#292524] tabular-nums font-mono">
+                    <span className="text-base font-extrabold text-[#1E293B] tabular-nums font-mono">
                       {formatValue(row.value)}
                     </span>
                     <span className="text-[#2563EB] text-xs font-bold tabular-nums">
                       Rank #{row.rank} of {totalCount}
                     </span>
                   </div>
-                  <p className="text-[#78716C] text-[11px]">{valueLabel}</p>
+                  <p className="text-[#64748B] text-[11px]">{valueLabel}</p>
                 </div>
               </MarkerPopup>
               <MarkerSync
