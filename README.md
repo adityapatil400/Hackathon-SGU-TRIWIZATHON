@@ -98,6 +98,11 @@ FlowGrid features a native local Ollama LLM integration (`models/ollama_intellig
 - **Dynamic Dispatch Prioritization**: Tags dispatch instructions into operational tiers (`P0_IMMEDIATE` < 2 days supply, `P1_HIGH` < 4 days, `P2_ROUTINE`).
 - **High-Reliability Deterministic Fallback**: Connects to local Ollama (`http://localhost:11434`), and automatically falls back to an internal analytical engine within 1.2s if Ollama is offline or times out, guaranteeing 100% operational reliability and zero pipeline crashes.
 
+### Module 6: Enterprise Light UI & Multilingual Translation Engine
+- **Warm Cream & White Theme**: Enterprise-grade light UI palette (White `#FFFFFF` cards, Warm Cream `#FFF8E7` page background, Light Cream `#FAF3E0` headers, Dark Navy `#1E293B` text, Blue `#2563EB` navigation, Red `#DC2626` primary actions, and Success Green `#15803D`).
+- **Multilingual Support (EN / HI / MR)**: Complete multilingual translation across English, Hindi (`हिंदी`), and Marathi (`मराठी`) with locale-aware currency (`₹`) and number formatting, synchronized across desktop, mobile, and Kirana POS views with persistent `localStorage` preference.
+- **Google Maps Satellite Mode**: Real satellite imagery with interactive distribution corridor routes, warehouse hubs, and retail demand markers.
+
 ---
 
 ## 3. Machine Learning & Optimization Architecture
