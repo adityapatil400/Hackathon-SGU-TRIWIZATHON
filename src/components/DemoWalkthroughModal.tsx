@@ -157,7 +157,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-[#FFF8E7] border-t border-[#E7E5E4] flex items-center justify-between text-xs text-[#64748B]">
-          <span>FlowGrid Enterprise • FMCG Trade Distribution Intelligence</span>
+          <span>HETVAYA Enterprise • FMCG Trade Distribution Intelligence</span>
           <button
             onClick={onClose}
             className="px-4 py-2 font-semibold text-[#1E293B] hover:bg-[#FAF3E0] bg-white border border-[#E7E5E4] rounded-lg transition-colors cursor-pointer"

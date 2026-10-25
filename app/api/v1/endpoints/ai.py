@@ -27,12 +27,16 @@ from app.schemas.ai import (
     FMCGEngineRunResponse,
     RoadRiskAssessmentRequest,
     RoadRiskAssessmentResponse,
+    ChatQueryRequest,
+    ChatQueryResponse,
 )
 from app.schemas.decision import CandidatePlanProposal
 from app.services.ollama_service import OllamaService
 from app.services.plan_lifecycle_service import PlanLifecycleService
+from app.services.chat_intelligence_service import ProductChatIntelligenceService
 
 router = APIRouter(prefix="/ai", tags=["AI & Ollama Intelligence"])
+
 
 # Cached instance of RoadRiskDelayPredictor
 _road_risk_predictor = None
@@ -418,5 +422,26 @@ def get_road_corridors(
             "typical_ghat_section": "Kashedi Ghat & Parshuram Ghat"
         }
     ]
+
+
+@router.post(
+    "/chat",
+    response_model=ChatQueryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Query HETVAYA Product AI Assistant",
+    description=(
+        "Answers product, inventory availability, batch expiry (FEFO), warehouse sourcing, "
+        "freight cost, and distribution allocation queries grounded in authoritative application data."
+    ),
+)
+def query_product_ai_assistant(
+    payload: ChatQueryRequest,
+    db: Session = Depends(get_db),
+) -> ChatQueryResponse:
+    return ProductChatIntelligenceService.process_chat_query(
+        payload=payload,
+        db=db,
+    )
+
 
 

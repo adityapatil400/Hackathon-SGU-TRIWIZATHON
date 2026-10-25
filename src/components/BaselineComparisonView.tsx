@@ -27,12 +27,12 @@ export const BaselineComparisonView: React.FC = () => {
 
   // Data for Recharts Bar Chart
   const stockoutChartData = [
-    { name: 'Stockout Units', CurrentPractice: seedData.currentStockout, StrongBaseline: seedData.strongStockout, FlowGrid: seedData.hetvayaStockout },
-    { name: 'Expired/Rejected', CurrentPractice: seedData.currentWaste, StrongBaseline: seedData.strongWaste, FlowGrid: seedData.hetvayaWaste },
+    { name: 'Stockout Units', CurrentPractice: seedData.currentStockout, StrongBaseline: seedData.strongStockout, HETVAYA: seedData.hetvayaStockout },
+    { name: 'Expired/Rejected', CurrentPractice: seedData.currentWaste, StrongBaseline: seedData.strongWaste, HETVAYA: seedData.hetvayaWaste },
   ];
 
   const freightChartData = [
-    { name: 'Freight Cost (₹)', CurrentPractice: seedData.currentFreight, StrongBaseline: seedData.strongFreight, FlowGrid: seedData.hetvayaFreight },
+    { name: 'Freight Cost (₹)', CurrentPractice: seedData.currentFreight, StrongBaseline: seedData.strongFreight, HETVAYA: seedData.hetvayaFreight },
   ];
 
   return (
@@ -134,7 +134,7 @@ export const BaselineComparisonView: React.FC = () => {
           </div>
         </div>
 
-        {/* Policy 3: FlowGrid Engine */}
+        {/* Policy 3: HETVAYA Engine */}
         <div className="bg-white p-5 rounded-2xl border-2 border-[#15803D] space-y-4 relative overflow-hidden shadow-xs">
           <div className="absolute top-0 right-0 bg-[#15803D] text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-bl-lg">
             Recommended
@@ -143,7 +143,7 @@ export const BaselineComparisonView: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#15803D]">Policy 3: This Engine</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] border border-emerald-200">OPTIMIZED</span>
           </div>
-          <h3 className="text-base font-extrabold text-[#1E293B]">{t('benchmark.flowgridEngine', 'FlowGrid Engine')}</h3>
+          <h3 className="text-base font-extrabold text-[#1E293B]">{t('benchmark.flowgridEngine', 'HETVAYA Engine')}</h3>
           <p className="text-xs text-[#64748B]">
             Marginal-value knapsack allocation • Arrival shelf-life per kirana • Lateness-weighed sourcing • Space limit
           </p>
@@ -188,7 +188,7 @@ export const BaselineComparisonView: React.FC = () => {
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 <Bar dataKey="CurrentPractice" fill="#64748B" name="Current Practice" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="StrongBaseline" fill="#2563EB" name="Strong Baseline" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="FlowGrid" fill="#15803D" name="FlowGrid Engine" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="HETVAYA" fill="#15803D" name="HETVAYA Engine" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -211,7 +211,7 @@ export const BaselineComparisonView: React.FC = () => {
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 <Bar dataKey="CurrentPractice" fill="#64748B" name="Current Practice" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="StrongBaseline" fill="#EA580C" name="Strong Baseline" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="FlowGrid" fill="#2563EB" name="FlowGrid Engine" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="HETVAYA" fill="#2563EB" name="HETVAYA Engine" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -225,10 +225,10 @@ export const BaselineComparisonView: React.FC = () => {
           <span>Factual Verification &amp; Innovation Grounding (Section 16 &amp; 17.2)</span>
         </div>
         <p className="leading-relaxed">
-          Against <strong>Current Practice</strong> (the spreadsheet rule used by 85–90% of Indian FMCG traditional trade distributors), FlowGrid achieves computed benchmark gains: <strong>{BENCHMARK_COMPARISONS.stockoutReductionVsCurrentPct}% stockouts</strong>, <strong>{BENCHMARK_COMPARISONS.wasteReductionVsCurrentPct}% expiry waste</strong>, and lost margin reduction of <strong>{BENCHMARK_COMPARISONS.lostMarginReductionVsCurrentPct}%</strong>.
+          Against <strong>Current Practice</strong> (the spreadsheet rule used by 85–90% of Indian FMCG traditional trade distributors), HETVAYA achieves computed benchmark gains: <strong>{BENCHMARK_COMPARISONS.stockoutReductionVsCurrentPct}% stockouts</strong>, <strong>{BENCHMARK_COMPARISONS.wasteReductionVsCurrentPct}% expiry waste</strong>, and lost margin reduction of <strong>{BENCHMARK_COMPARISONS.lostMarginReductionVsCurrentPct}%</strong>.
         </p>
         <p className="leading-relaxed text-[#64748B]">
-          Against the <strong>Strong Baseline</strong> (safety-stock + FEFO), FlowGrid achieves <strong>{BENCHMARK_COMPARISONS.stockoutChangeVsTextbookPct}% stockouts</strong> and <strong>{BENCHMARK_COMPARISONS.wasteReductionVsTextbookPct}% expiry waste</strong>, while maintaining 100% decision feasibility in under 1ms (p95: {BENCHMARK_SOLVE_TIME.p95}ms).
+          Against the <strong>Strong Baseline</strong> (safety-stock + FEFO), HETVAYA achieves <strong>{BENCHMARK_COMPARISONS.stockoutChangeVsTextbookPct}% stockouts</strong> and <strong>{BENCHMARK_COMPARISONS.wasteReductionVsTextbookPct}% expiry waste</strong>, while maintaining 100% decision feasibility in under 1ms (p95: {BENCHMARK_SOLVE_TIME.p95}ms).
         </p>
       </div>
     </div>

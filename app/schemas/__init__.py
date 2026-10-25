@@ -97,4 +97,16 @@ __all__ = [
     "AllocationPlanResponse",
     "PlanCommitRequest",
     "PlanCommitResult",
+    "ChatQueryContext",
+    "ChatSourceItem",
+    "ChatQueryRequest",
+    "ChatQueryResponse",
 ]
+
+from app.schemas.ai import (
+    ChatQueryContext,
+    ChatSourceItem,
+    ChatQueryRequest,
+    ChatQueryResponse,
+)
+

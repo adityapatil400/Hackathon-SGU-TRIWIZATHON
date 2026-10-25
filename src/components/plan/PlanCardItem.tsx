@@ -6,9 +6,10 @@ import {
   Edit3,
   CheckCircle2,
   Copy,
-  Check
+  Check,
+  Bot
 } from 'lucide-react';
-import { AllocationLine, Product, Warehouse, Retailer, InventoryBatch } from '../../types';
+import { AllocationLine, Product, Warehouse, Retailer, InventoryBatch, ChatContext } from '../../types';
 import { ShelfLifeIndicator } from './ShelfLifeIndicator';
 import { useTranslation } from '../../context/TranslationContext';
 
@@ -21,6 +22,7 @@ interface PlanCardItemProps {
   onExplain: (line: AllocationLine) => void;
   onEdit: (line: AllocationLine) => void;
   onApprove: (lineId: string) => void;
+  onAskAi?: (context: ChatContext) => void;
   isApproving?: boolean;
 }
 
@@ -33,6 +35,7 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
   onExplain,
   onEdit,
   onApprove,
+  onAskAi,
   isApproving = false,
 }) => {
   const { t, formatCurrency, formatNumber } = useTranslation();
@@ -197,6 +200,25 @@ export const PlanCardItem: React.FC<PlanCardItemProps> = ({
           <HelpCircle className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>{t('explain') || 'Explain'}</span>
         </button>
+
+        {/* Ask AI Context Button */}
+        {onAskAi && (
+          <button
+            type="button"
+            onClick={() => onAskAi({
+              productSku: line.sku,
+              productName: product?.name,
+              warehouseId: line.warehouseId,
+              retailerId: line.retailerId,
+              planCode: line.planRunId,
+            })}
+            className="p-1.5 rounded-lg text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition-colors cursor-pointer shadow-xs"
+            title="Ask HETVAYA AI Assistant about this product & allocation"
+          >
+            <Bot className="w-3.5 h-3.5 text-[#2563EB]" />
+          </button>
+        )}
+
 
         {/* Secondary Edit / Override Button */}
         <button

@@ -19,10 +19,11 @@ import {
   X,
   ArrowUpDown,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Bot
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { PlanRun, AllocationLine, Product, Warehouse, Retailer, InventoryBatch } from '../types';
+import { PlanRun, AllocationLine, Product, Warehouse, Retailer, InventoryBatch, ChatContext } from '../types';
 import { ReasonCardModal } from './ReasonCardModal';
 import { ShelfLifeIndicator, normalizeShelfLifePct } from './plan/ShelfLifeIndicator';
 import { PlanKpiCards } from './plan/PlanKpiCards';
@@ -44,6 +45,7 @@ interface PlanGeneratorViewProps {
   retailers: Retailer[];
   batches?: InventoryBatch[];
   isGenerating: boolean;
+  onAskAi?: (context: ChatContext) => void;
 }
 
 export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
@@ -59,6 +61,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
   retailers,
   batches,
   isGenerating,
+  onAskAi,
 }) => {
   const { t, formatCurrency, formatNumber } = useTranslation();
 
@@ -580,6 +583,7 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                 onExplain={setSelectedReasonLine}
                 onEdit={handleOpenOverride}
                 onApprove={handleApproveLineWithFeedback}
+                onAskAi={onAskAi}
                 isApproving={approvingLineId === line.id}
               />
             );
@@ -859,6 +863,26 @@ export const PlanGeneratorView: React.FC<PlanGeneratorViewProps> = ({
                             <HelpCircle className="w-3.5 h-3.5 text-[#2563EB]" />
                             <span>{t('explain') || 'Explain'}</span>
                           </button>
+
+                          {/* Ask AI Context Button */}
+                          {onAskAi && (
+                            <button
+                              type="button"
+                              onClick={() => onAskAi({
+                                productSku: line.sku,
+                                productName: prod?.name,
+                                warehouseId: line.warehouseId,
+                                retailerId: line.retailerId,
+                                planCode: planRun?.id,
+                              })}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] px-2 py-1.5 rounded-lg border border-[#BFDBFE] transition-colors cursor-pointer shadow-xs"
+                              title="Ask HETVAYA AI about this product allocation"
+                            >
+                              <Bot className="w-3.5 h-3.5 text-[#2563EB]" />
+                              <span>Ask AI</span>
+                            </button>
+                          )}
+
 
                           {/* Override / Edit Button: Secondary */}
                           <button

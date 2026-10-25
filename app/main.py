@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging, logger
@@ -54,7 +54,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description=(
-        "FlowGrid: AI-powered distribution intelligence and inventory optimization system. "
+        "HETVAYA: AI-powered distribution intelligence, inventory optimization, and product assistant. "
         "Enforces the backend as the single authority for inventory allocation and commitment."
     ),
     lifespan=lifespan,
@@ -76,8 +76,19 @@ app.add_middleware(
 
 # Include API Routers
 from app.api.v1.router import api_router
+from app.db.session import get_db
+from sqlalchemy.orm import Session
+from app.schemas.ai import ChatQueryRequest, ChatQueryResponse
+from app.services.chat_intelligence_service import ProductChatIntelligenceService
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(api_router, include_in_schema=False)  # Direct route aliases without /api/v1 prefix
+
+
+@app.post("/api/chat", response_model=ChatQueryResponse, tags=["HETVAYA Product AI Assistant"])
+def chat_direct_alias(payload: ChatQueryRequest, db: Session = Depends(get_db)) -> ChatQueryResponse:
+    """Direct alias endpoint for HETVAYA Product AI Assistant."""
+    return ProductChatIntelligenceService.process_chat_query(payload=payload, db=db)
 
 
 @app.get("/")
@@ -88,3 +99,4 @@ def root():
         "docs_url": "/docs",
         "authoritative_rule": "Backend is the single authority for plan commitment",
     }
+

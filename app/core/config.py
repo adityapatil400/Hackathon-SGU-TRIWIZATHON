@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     Central application settings loaded from environment variables.
     Follows strict security practices: no hardcoded secrets and secret masking.
     """
-    PROJECT_NAME: str = "FlowGrid"
+    PROJECT_NAME: str = "HETVAYA"
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"

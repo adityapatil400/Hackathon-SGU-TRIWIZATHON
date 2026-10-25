@@ -116,7 +116,7 @@ def test_root_and_health_integration(client: TestClient):
     # Root endpoint
     resp = client.get("/")
     assert resp.status_code == 200
-    assert "FlowGrid" in resp.json()["message"]
+    assert "HETVAYA" in resp.json()["message"] or "FlowGrid" in resp.json()["message"]
     assert "authoritative_rule" in resp.json()
 
     # Liveness health check

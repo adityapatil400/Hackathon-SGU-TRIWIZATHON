@@ -7,7 +7,7 @@ def test_root_endpoint(client: TestClient):
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert "FlowGrid" in data["message"]
+    assert "HETVAYA" in data["message"] or "FlowGrid" in data["message"]
     assert data["authoritative_rule"] == "Backend is the single authority for plan commitment"
 
 
@@ -16,7 +16,7 @@ def test_health_check_endpoint(client: TestClient):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert data["service"] == "FlowGrid"
+    assert data["service"] in ("HETVAYA", "FlowGrid")
     assert data["authoritative_backend_authority"] == "ENFORCED"
     assert data["direct_decision_commit_allowed"] is False
     assert "timestamp" in data

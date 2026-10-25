@@ -370,7 +370,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'benchmark.seedSelector': 'Simulation Seed',
     'benchmark.currentPractice': 'Current Practice (Spreadsheet Rule)',
     'benchmark.strongBaseline': 'Strong Baseline (Safety Stock + FEFO)',
-    'benchmark.flowgridEngine': 'FlowGrid Greedy Marginal Knapsack',
+    'benchmark.flowgridEngine': 'HETVAYA Greedy Marginal Knapsack',
     'benchmark.honestClaim': 'Factual Verification & Innovation Grounding',
 
     // Admin & Health
@@ -389,7 +389,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'modal.whatIfTitle': 'What-If Disruption Scenario Simulator',
     'modal.whatIfSubtitle': 'Simulate sudden demand spikes, highway delivery delays, or expired warehouse stock',
     'modal.demoTitle': '3-Minute Interactive Demo Walkthrough',
-    'modal.demoSubtitle': 'Step-by-step executive tour of FlowGrid Indian FMCG distribution intelligence',
+    'modal.demoSubtitle': 'Step-by-step executive tour of HETVAYA Indian FMCG distribution intelligence',
     'modal.approveAllTitle': 'Confirm Bulk Plan Approval',
     'modal.approveAllDesc': 'Are you sure you want to approve all allocation lines for this weekly dispatch cycle?',
     'modal.confirmApprove': 'Confirm & Lock Approval',
@@ -558,7 +558,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'benchmark.seedSelector': 'सिमुलेशन बीज',
     'benchmark.currentPractice': 'वर्तमान कार्यप्रणाली (स्प्रेडशीट नियम)',
     'benchmark.strongBaseline': 'मजबूत बेसलाइन (सेफ्टी स्टॉक + फेफो)',
-    'benchmark.flowgridEngine': 'फ्लोग्रिड ग्रीडी मार्जिनल नैपसैक',
+    'benchmark.flowgridEngine': 'हेत्वया ग्रीडी मार्जिनल नैपसैक',
     'benchmark.honestClaim': 'तथ्यात्मक सत्यापन एवं नवाचार प्रमाण',
 
     // Admin & Health
@@ -746,7 +746,7 @@ const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     'benchmark.seedSelector': 'सिम्युलेशन बीज',
     'benchmark.currentPractice': 'सध्याची पद्धत (स्प्रेडशीट नियम)',
     'benchmark.strongBaseline': 'मजबूत बेसलाइन (सेफ्टी स्टॉक + फेफो)',
-    'benchmark.flowgridEngine': 'फ्लोग्रिड ग्रीडी मार्जिनल नॅपसॅक',
+    'benchmark.flowgridEngine': 'हेत्वया ग्रीडी मार्जिनल नॅपसॅक',
     'benchmark.honestClaim': 'तथ्य पडताळणी आणि नाविन्यता प्रमाण',
 
     // Admin & Health
