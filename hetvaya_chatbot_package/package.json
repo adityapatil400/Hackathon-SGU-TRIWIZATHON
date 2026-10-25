@@ -1,0 +1,23 @@
+{
+  "name": "hetvaya-product-chatbot",
+  "version": "1.0.0",
+  "description": "Standalone Product Intelligence & FMCG Chatbot Component for HETVAYA",
+  "main": "frontend/ProductAiAssistant.tsx",
+  "types": "frontend/types.ts",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "lucide-react": ">=0.400.0"
+  },
+  "keywords": [
+    "chatbot",
+    "ai",
+    "fmcg",
+    "inventory",
+    "supply-chain",
+    "react",
+    "fastapi"
+  ],
+  "author": "HETVAYA Team",
+  "license": "MIT"
+}

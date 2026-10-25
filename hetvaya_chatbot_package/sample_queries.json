@@ -1,0 +1,63 @@
+{
+  "description": "Ready-to-use sample queries for HETVAYA Product AI Assistant",
+  "endpoint": "http://localhost:8001/chat",
+  "queries": [
+    {
+      "title": "Check Out-of-Stock Products",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"Which products are currently out of stock?\"}'",
+      "payload": {
+        "message": "Which products are currently out of stock?"
+      }
+    },
+    {
+      "title": "FEFO Expiry Risk Assessment",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"Which products are at risk of expiry?\"}'",
+      "payload": {
+        "message": "Which products are at risk of expiry?"
+      }
+    },
+    {
+      "title": "Stock Availability for Specific SKU",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"What is the available inventory for Aashirvaad Atta?\"}'",
+      "payload": {
+        "message": "What is the available inventory for Aashirvaad Atta?"
+      }
+    },
+    {
+      "title": "Warehouse Sourcing with SKU Context",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"Which warehouse can supply this product?\", \"context\": {\"product_sku\": \"SKU-OIL-01\"}}'",
+      "payload": {
+        "message": "Which warehouse can supply this product?",
+        "context": {
+          "product_sku": "SKU-OIL-01"
+        }
+      }
+    },
+    {
+      "title": "Corridor Freight Cost Calculation",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"What is the estimated freight cost from Pune to D-Mart?\"}'",
+      "payload": {
+        "message": "What is the estimated freight cost from Pune to D-Mart?"
+      }
+    },
+    {
+      "title": "Explain Distribution Allocation Justification",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"Why was this product allocated to this retailer?\", \"context\": {\"product_sku\": \"SKU-ATT-05\", \"retailer_id\": \"RET-GAN\"}}'",
+      "payload": {
+        "message": "Why was this product allocated to this retailer?",
+        "context": {
+          "product_sku": "SKU-ATT-05",
+          "retailer_id": "RET-GAN"
+        }
+      }
+    },
+    {
+      "title": "Multilingual Query in Hindi",
+      "curl": "curl -X POST http://localhost:8001/chat -H 'Content-Type: application/json' -d '{\"message\": \"Which products are out of stock?\", \"language\": \"hi\"}'",
+      "payload": {
+        "message": "Which products are out of stock?",
+        "language": "hi"
+      }
+    }
+  ]
+}
